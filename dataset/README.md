@@ -18,14 +18,20 @@ TMDB_API_KEY=<your-api-key>
 TMDB_READ_TOKEN=<your-token>
 ```
 
-You can create a TMDB account [here](https://www.themoviedb.org/) and then make an API key and read token.
+You can create a TMDB account [here](https://www.themoviedb.org/) and then make an API key and read token. 
+
+If you want isolation and don't want the dependencies of this process to interfere with your dev env, I recommend using [Poetry](https://python-poetry.org/docs/basic-usage/) and running the With Poetry option under the Running section. 
 
 
 ## Running
 
-To run the code for 
+To run the code for this dataset generation simply
+
+### With Poetry 
+
+### Without Poetry 
 
 ## Download 
 
-Instead of do
+Instead of do 
 
