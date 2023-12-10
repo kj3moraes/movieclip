@@ -91,7 +91,7 @@ def __consume(save_path: Path):
         url_queue.task_done()
 
 
-def download(url: str, save_dir: str) -> dict:
+def download_images(url: str, save_dir: str) -> dict:
     """
     Function to extract HTMLS links from a list and and download the images from
     the respective webpages. 

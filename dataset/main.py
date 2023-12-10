@@ -1,4 +1,4 @@
-from download import download
+from download import download_images
 
 SAVE_PATH = "data"
 FILM_GRAB_URL = "https://film-grab.com/movies-a-z/"

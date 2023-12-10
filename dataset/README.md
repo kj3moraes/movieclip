@@ -27,11 +27,65 @@ If you want isolation and don't want the dependencies of this process to interfe
 
 To run the code for this dataset generation simply
 
-### With Poetry 
+### With Poetry
 
-### Without Poetry 
+### Without Poetry
 
-## Download 
+## Download
 
-Instead of do 
+### Manual Download
 
+### HuggingFace Download
+
+### S3 Download
+
+
+## Using the Dataset
+
+An example of a dataset is here
+
+```python
+class MovieclipDataset: 
+    def __init__(self, patch_size=320, is_validation=False, should_normalize=True):
+        # Get the paths for the data
+        training_path = DATASETS_PATH / 'imagenette2-320/train'
+        if not training_path.exists(): raise Exception(f"Dataset not found at {training_path}")
+        validation_path = DATASETS_PATH / 'imagenette2-320/val'
+        if not validation_path.exists(): raise Exception(f"Dataset not found at {validation_path}")
+        self.folder = training_path if not is_validation else validation_path
+
+        # Set the normalization and the validation flags
+        self.is_validation = is_validation
+        self.should_normalize = should_normalize
+
+        self.images = []
+        for cls in classes:
+            cls_images = list(self.folder.glob(cls + '/*.JPEG'))
+            self.images.extend(cls_images)
+
+        self.patch_size = patch_size
+        self.resize = transforms.Resize((patch_size, patch_size))
+        self.normalization = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+
+    def __getitem__(self, index):
+        image_fname = self.images[index]
+        image = Image.open(image_fname)
+        label = image_fname.parent.stem
+
+        # Get the index of the label and make it a tensor with that index as 1
+        label_idx = classes.index(label)
+        label_t = torch.zeros((NUM_CLASSES), dtype=float)
+        label_t[label_idx] = 1.0
+
+        # Transform the image
+        image = self.resize(image)
+        image_t = transforms.functional.to_tensor(image)
+        if image_t.shape[0] == 1: image_t = image_t.expand(3, self.patch_size, self.patch_size)
+        if self.should_normalize:
+          image_t = self.normalization(image_t)
+
+        return image_t, label_t
+
+    def __len__(self):
+        return len(self.images)
+```
