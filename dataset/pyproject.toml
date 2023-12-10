@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "dataset"
+version = "0.1.0"
+description = "Generating the movieclip dataset"
+authors = ["Keane Moraes <lordvader3002@gmail.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+beautifulsoup4 = "^4.12.2"
+requests = "^2.31.0"
+argparse = "^1.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
