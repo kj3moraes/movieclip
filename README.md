@@ -1,3 +1,5 @@
+<img style="float: left; padding:20px" src="media/clip.svg" alt="movieclip" width="75"/>
+
 # movieclip
 
 This repository is an experiment in contrastive learning and how it can be applied to something I like a lot - movies. What if we can train models to recognize cinematographic styles from training on movie scenes? This is what I try to solve in this experiment.
