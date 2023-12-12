@@ -1,5 +1,6 @@
 import os
 import requests 
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,3 +30,15 @@ def get_movie_poster_from_id(id: str):
         print(f"Failed to get data for {title}")
     return r.json()
 
+
+CAPTIONING_API_URL = "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large"
+HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
+
+def get_image_caption(im_path: Path):
+    with open(filename, "rb") as f:
+        data = f.read()
+    response = requests.post(API_URL, headers=headers, data=data)
+    return response.json()
+
+output = get_image_caption("cats.jpg")
