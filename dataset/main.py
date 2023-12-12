@@ -1,6 +1,7 @@
 from pathlib import Path
 from shutil import rmtree
 import os
+import json
 import math
 from dotenv import load_dotenv
 import requests
@@ -20,13 +21,13 @@ from query import get_movie_data_from_title
 
 # Constants for the producers consumers  
 MAX_BUFFER_SIZE = 20
-NUM_PRODUCERS = 4
-NUM_CONSUMERS = 20 
+NUM_PRODUCERS = 2
+NUM_CONSUMERS = 5 
 
 # Directory path
-SAVE_PATH = "data"
-TRAINING_DATA_PATH = "train"
-TESTING_DATA_PATH  = "test"
+SAVE_PATH = Path("data")
+TRAINING_DATA_PATH = SAVE_PATH / "train"
+TESTING_DATA_PATH  = SAVE_PATH / "test"
 FILM_GRAB_URL = "https://film-grab.com/movies-a-z/"
 
 
@@ -46,7 +47,7 @@ movie_results = {}
 movie_results_mutex = threading.Lock()
 
 # Map of IMDB ID to Movie name
-movie_id_names = {}
+movie_id_names = {} 
 movie_id_names_mutex = threading.Lock()
 
 # Director to movie ID map
@@ -58,7 +59,7 @@ genre_movie_id = defaultdict(list)
 genre_movie_id_mutex =  threading.Lock()
 
 
-def __download_images_from_url(url: str, directory: Path) -> int: 
+def __download_images_from_url(url: str, movie_id: Path) -> int: 
     """
     Function to download images from a given URL and stores them in the specified path.
     Returns the number of images that were extracted.
@@ -74,21 +75,37 @@ def __download_images_from_url(url: str, directory: Path) -> int:
     # 'bwg-masonry-thumb' because that is FILM-GRABs unique class name for
     # all the images that occur in that specific  
     image_tags = soup.find_all('img', class_='bwg-masonry-thumb')
-    
-    # Create a directory to save images
-    if directory.exists():
-        rmtree(directory)
-    directory.mkdir(parents=True)
+    movie_train_data_dir= TRAINING_DATA_PATH / movie_id 
+    movie_test_data_dir = TESTING_DATA_PATH / movie_id 
 
-    # Download each image
+    # Create a directory to save images
+    if movie_train_data_dir.exists():
+        rmtree(movie_train_data_dir)
+    movie_train_data_dir.mkdir(parents=True)
+    if movie_test_data_dir.exists():
+        rmtree(movie_test_data_dir)
+    movie_test_data_dir.mkdir(parents=True)
+
+
+    # Download all the images and move 5 of them from 
+    # training set to the testing set.
+    image_count = len(image_tags)
+    train_img_count, test_img_count = 0, 0
+    test_img_ids = set([i for i in range(0, image_count, image_count // 5)])
     for idx, img_tag in enumerate(image_tags):
         img_url = img_tag.get('src')
         if img_url:
-            img_filename = directory / f"{idx + 1}.jpg"
+            if idx in test_img_ids:
+                img_filename = TESTING_DATA_PATH / movie_id / f"{test_img_count + 1}.jpg"
+                test_img_count += 1
+            else:
+                img_filename = TRAINING_DATA_PATH / movie_id / f"{train_img_count + 1}.jpg"
+                train_img_count += 1
             with open(img_filename, 'wb') as img_file:
-                img_data = requests.get(img_url).content
-                img_file.write(img_data)
-                image_count += 1
+                response = requests.get(img_url)
+                if response.status_code == requests.codes.ok:
+                    image_data = response.content
+                img_file.write(image_data)
 
     return image_count
 
@@ -108,14 +125,13 @@ def __consume(save_path: Path):
         data = url_queue.get()
         full_semaphore.release()
 
-        url, movie_name = data 
+        url, movie_name = data
 
         # Get the movie information from OMDb
         movie_data = get_movie_data_from_title(movie_name) 
         movie_id = movie_data['imdbID']
         directors = movie_data['Director']
         genres = movie_data['Genre']
-        movie_save_path = save_path / movie_id
     
         # We must make this before because
         with movie_results_mutex:
@@ -123,7 +139,7 @@ def __consume(save_path: Path):
     
         # Download images from the extracted URL
         print(f"Downloading images from {url} for {movie_name}")
-        num_images = __download_images_for_url(url, movie_save_path) 
+        num_images = __download_images_from_url(url, movie_id) 
 
         with movie_results_mutex:    
             movie_results[movie_name]['num_images'] = num_images 
@@ -142,7 +158,7 @@ def __consume(save_path: Path):
         url_queue.task_done()
 
 
-def download_images(url: str, save_dir: str) -> dict:
+def download_images() -> dict:
     """
     Function to extract HTMLS links from a list and and download the images from
     the respective webpages. (Modifies global variables)
@@ -152,14 +168,15 @@ def download_images(url: str, save_dir: str) -> dict:
     """
  
     # Get the HTML content from the URL
-    fp = urllib.request.urlopen(url)
+    fp = urllib.request.urlopen(FILM_GRAB_URL)
     html_bytes = fp.read()
     html_content = html_bytes.decode("utf8")
     fp.close() 
     soup = BeautifulSoup(html_content, 'html.parser')
 
-    DIRECTORY_SAVE_PATH = Path(save_dir)
-    DIRECTORY_SAVE_PATH.mkdir(exist_ok=True)
+    SAVE_PATH.mkdir(exist_ok=True)
+    TRAINING_DATA_PATH.mkdir(exist_ok=True)
+    TESTING_DATA_PATH.mkdir(exist_ok=True)
 
     # Find all list items with class 'listing-item'
     listing_items = soup.find_all('li', class_='listing-item')
@@ -187,7 +204,7 @@ def download_images(url: str, save_dir: str) -> dict:
     # Create consumer threads
     consumer_threads = []
     for i in range(NUM_CONSUMERS):
-        consumer = threading.Thread(target=__consume, args=(DIRECTORY_SAVE_PATH,))
+        consumer = threading.Thread(target=__consume, args=(SAVE_PATH,))
         consumer_threads.append(consumer)
         consumer.start()
 
@@ -199,10 +216,24 @@ def download_images(url: str, save_dir: str) -> dict:
     url_queue.join()
 
 
-
 #  =========================== SAVING ALL THE NECESSARY INFORMATION =========================== 
 
 
-download_images(FILM_GRAB_URL, SAVE_PATH)
+print("Starting to download all images")
+download_images()
+print("Completed downloading all images")
 
 # Save the movie results, movie ids maps, directors, and genres.
+with open(SAVE_PATH / "results.json", "w+") as outfile:
+    json.dump(movie_results, outfile, indent=4)
+
+with open(SAVE_PATH / "directors.json", "w+") as outfile:
+    json.dump(director_movie_id, outfile, indent=4)
+
+with open(SAVE_PATH / "genres.json", "w+") as outfile:
+    json.dump(genre_movie_id, outfile, indent=4)
+
+with open(SAVE_PATH / "ids.json", "w+") as outfile:
+    json.dump(movie_id_names, outfile, indent=4)
+
+print(f"Completed saving information to {SAVE_PATH}")

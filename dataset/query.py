@@ -7,11 +7,17 @@ load_dotenv()
 OMDB_API_KEY = os.getenv("OMDB_API_KEY")
 BASE_URL = f"http://www.omdbapi.com/?apikey={OMDB_API_KEY}&"
 
-def __process_respose(response: dict) -> dict:
+def __process_response(response: dict) -> dict:
     """
     Function takes a response from OMDb and converts into a dictionary that we want
     """
-    pass
+    
+    response['Director'] = response['Director'].replace(", ", ",").split(",") 
+    response['Writer'] = response['Writer'].replace(", ", ",").split(",")
+    response['Actors'] = response['Actors'].replace(", ", ",").split(",")
+    response['Genre'] = response['Genre'].replace(", ", ",").split(",")
+    return response
+
 
 def get_movie_data_from_title(title: str):
     url = f"{BASE_URL}t={title}"
@@ -19,7 +25,7 @@ def get_movie_data_from_title(title: str):
     r = requests.get(url)
     if r.status_code != requests.codes.ok:
         print(f"Failed to get data for {title}")
-    return r.json()
+    return __process_response(r.json())
 
 
 def get_movie_poster_from_id(id: str):
@@ -28,7 +34,7 @@ def get_movie_poster_from_id(id: str):
     r = requests.get(url)
     if r.status_code != requests.codes.ok:
         print(f"Failed to get data for {title}")
-    return r.json()
+    return __process_response(r.json())
 
 
 CAPTIONING_API_URL = "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large"
@@ -41,4 +47,4 @@ def get_image_caption(im_path: Path):
     response = requests.post(API_URL, headers=headers, data=data)
     return response.json()
 
-output = get_image_caption("cats.jpg")
+# output = get_image_caption("cats.jpg")
