@@ -1,14 +1,19 @@
 from pathlib import Path
-import math
+from shutil import rmtree
 import os
+import math
 from dotenv import load_dotenv
 import requests
-import urllib.request
+from collections import defaultdict
+
+import urllib.request 
 import urllib.parse
-from shutil import rmtree
 from bs4 import BeautifulSoup
+
 import threading
 import queue
+
+from query import get_movie_data_from_title
 
 
 # ============================= IMPORTANT CONSTANTS =============================
@@ -45,21 +50,23 @@ movie_id_names = {}
 movie_id_names_mutex = threading.Lock()
 
 # Director to movie ID map
-director_movie_id = {}
+director_movie_id = defaultdict(list)
 director_movie_id_mutex = threading.Lock()
 
 # Genre to movie ID map
-genre_movie_id = {}
+genre_movie_id = defaultdict(list) 
 genre_movie_id_mutex =  threading.Lock()
 
 
-def __download_images_from_url(url, directory: Path) -> int: 
+def __download_images_from_url(url: str, directory: Path) -> int: 
     """
     Function to download images from a given URL and stores them in the specified path.
     Returns the number of images that were extracted.
     """
-
+    
     image_count = 0 
+    
+    # Get the HTML of the page from the URL
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -102,22 +109,44 @@ def __consume(save_path: Path):
         full_semaphore.release()
 
         url, movie_name = data 
-        directory_name = movie_name.strip().replace(' ', '_')
 
+        # Get the movie information from OMDb
+        movie_data = get_movie_data_from_title(movie_name) 
+        movie_id = movie_data['imdbID']
+        directors = movie_data['Director']
+        genres = movie_data['Genre']
+        movie_save_path = save_path / movie_id
+    
+        # We must make this before because
+        with movie_results_mutex:
+            movie_results[movie_name] = movie_data
+    
         # Download images from the extracted URL
         print(f"Downloading images from {url} for {movie_name}")
-        movie_dir_save = save_path / directory_name
-        num_images = __download_images_for_url(url, movie_dir_save) 
+        num_images = __download_images_for_url(url, movie_save_path) 
+
+        with movie_results_mutex:    
+            movie_results[movie_name]['num_images'] = num_images 
+
+        with movie_id_names_mutex:
+            movie_id_names[movie_id] = movie_name 
+
+        with director_movie_id_mutex:
+            for director in directors:
+                director_movie_id[director].append(movie_id)
                 
-        with movie_results_mutex:
-            movie_results[movie_name] = {"path": str(movie_dir_save), "num_images": num_images}
+        with genre_movie_id_mutex:
+            for genre in genres:
+                genre_movie_id[genre].append(movie_id)
+
         url_queue.task_done()
 
 
 def download_images(url: str, save_dir: str) -> dict:
     """
     Function to extract HTMLS links from a list and and download the images from
-    the respective webpages. 
+    the respective webpages. (Modifies global variables)
+    
     Returns a dictionary containing information about the movies downloaded and the 
     path to where they are downloaded.
     """
@@ -169,7 +198,11 @@ def download_images(url: str, save_dir: str) -> dict:
     # Wait for all tasks in the queue to be processed
     url_queue.join()
 
-    return movie_results
 
 
 #  =========================== SAVING ALL THE NECESSARY INFORMATION =========================== 
+
+
+download_images(FILM_GRAB_URL, SAVE_PATH)
+
+# Save the movie results, movie ids maps, directors, and genres.
