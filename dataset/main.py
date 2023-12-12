@@ -20,9 +20,9 @@ from query import get_movie_data_from_title
 # ============================= IMPORTANT CONSTANTS =============================
 
 # Constants for the producers consumers  
-MAX_BUFFER_SIZE = 20
-NUM_PRODUCERS = 2
-NUM_CONSUMERS = 5 
+MAX_BUFFER_SIZE = 100
+NUM_PRODUCERS = 10
+NUM_CONSUMERS = 50
 
 # Directory path
 SAVE_PATH = Path("data")
@@ -59,7 +59,7 @@ genre_movie_id = defaultdict(list)
 genre_movie_id_mutex =  threading.Lock()
 
 
-def __download_images_from_url(url: str, movie_id: Path) -> int: 
+def __download_images_from_url(url: str, movie_id: str) -> int: 
     """
     Function to download images from a given URL and stores them in the specified path.
     Returns the number of images that were extracted.
@@ -129,17 +129,25 @@ def __consume(save_path: Path):
 
         # Get the movie information from OMDb
         movie_data = get_movie_data_from_title(movie_name) 
-        movie_id = movie_data['imdbID']
-        directors = movie_data['Director']
-        genres = movie_data['Genre']
-    
+        try:
+            movie_id = movie_data['imdbID']
+            directors = movie_data['Director']
+            genres = movie_data['Genre']
+        except Exception as e:
+            print(f"Failed for movie {movie_name} since {e}") 
+            continue
+        
         # We must make this before because
         with movie_results_mutex:
             movie_results[movie_name] = movie_data
     
         # Download images from the extracted URL
         print(f"Downloading images from {url} for {movie_name}")
-        num_images = __download_images_from_url(url, movie_id) 
+        try:
+            num_images = __download_images_from_url(url, movie_id) 
+        except Exception as e:
+            print(f"Failed for movie {movie_name} becaue {e}")
+            continue
 
         with movie_results_mutex:    
             movie_results[movie_name]['num_images'] = num_images 
@@ -189,7 +197,8 @@ def download_images() -> dict:
             url = link.get('href')
             text = link.get_text()
             urls.append((url, text))
-
+    if DEMO:
+        urls = urls[:4]
     print(f"Total number of movies = {len(urls)}")
     CHUNK_SIZE = int(math.ceil(len(urls) / NUM_PRODUCERS))
     chunked_urls = [urls[i:min(len(urls), i+CHUNK_SIZE)] for i in range(0, len(urls), CHUNK_SIZE)] 
@@ -218,6 +227,7 @@ def download_images() -> dict:
 
 #  =========================== SAVING ALL THE NECESSARY INFORMATION =========================== 
 
+DEMO = False 
 
 print("Starting to download all images")
 download_images()

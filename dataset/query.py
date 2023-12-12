@@ -12,10 +12,10 @@ def __process_response(response: dict) -> dict:
     Function takes a response from OMDb and converts into a dictionary that we want
     """
     
-    response['Director'] = response['Director'].replace(", ", ",").split(",") 
-    response['Writer'] = response['Writer'].replace(", ", ",").split(",")
-    response['Actors'] = response['Actors'].replace(", ", ",").split(",")
-    response['Genre'] = response['Genre'].replace(", ", ",").split(",")
+    response['Director'] = response.get('Director', '').replace(", ", ",").split(",") 
+    response['Writer'] = response.get('Writer', '').replace(", ", ",").split(",")
+    response['Actors'] = response.get('Actors', '').replace(", ", ",").split(",")
+    response['Genre'] = response.get('Genre', '').replace(", ", ",").split(",")
     return response
 
 
@@ -48,3 +48,4 @@ def get_image_caption(im_path: Path):
     return response.json()
 
 # output = get_image_caption("cats.jpg")
+print(get_movie_data_from_title("The Laundromat"))
