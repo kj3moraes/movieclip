@@ -23,8 +23,8 @@ from query import get_movie_data_from_title
 
 # Constants for the producers consumers
 MAX_BUFFER_SIZE = 100
-NUM_PRODUCERS = 10
-NUM_CONSUMERS = 40
+NUM_PRODUCERS = 15
+NUM_CONSUMERS = 60
 
 # Directory path
 SAVE_PATH = Path("data")
@@ -44,11 +44,17 @@ full_semaphore = threading.Semaphore(MAX_BUFFER_SIZE)
 
 # Movie results
 movie_results = {}
+total_movies = 0
+total_images = 0
 movie_results_mutex = threading.Lock()
 
 # Map of IMDB ID to Movie name
 movie_id_names = {}
 movie_id_names_mutex = threading.Lock()
+
+# Reverse Lookup of movie name to IMDB ID
+movie_name_ids = {}
+movie_name_ids_mutex = threading.Lock()
 
 # Director to movie ID map
 director_movie_id = defaultdict(list)
@@ -82,16 +88,30 @@ def __download_images_from_url(url: str, movie_id: str) -> int:
     image_tags = soup.find_all(
         "img", class_="skip-lazy bwg-masonry-thumb bwg_masonry_thumb_0"
     )
+    alt_images_tags = soup.find_all(
+        "img", class_="skip-lazy bwg-standart_thumb_img_0"
+    )
+    image_tags.extend(alt_images_tags)
     movie_train_data_dir = TRAINING_DATA_PATH / movie_id
     movie_test_data_dir = TESTING_DATA_PATH / movie_id
 
     # Create a directory to save images
-    movie_train_data_dir.mkdir(exist_ok=True, parents=True)
-    movie_test_data_dir.mkdir(exist_ok=True, parents=True)
+    # (NOTE): We can freely delete the directory if it already exists because 
+    # if we are downloading the images here, it means that the exisiting folder
+    # is corrupted or incomplete.
+    if movie_train_data_dir.exists():
+        rmtree(movie_train_data_dir)
+    movie_train_data_dir.mkdir(parents=True)
+    if movie_test_data_dir.exists():
+        rmtree(movie_test_data_dir)
+    movie_test_data_dir.mkdir(parents=True)
 
     # Download all the images and move 5 of them from
     # training set to the testing set.
     image_count = len(image_tags)
+    if image_count == 0:
+        raise Exception("No images found")
+    
     train_img_count, test_img_count = 0, 0
     test_img_ids = set([i for i in range(0, image_count, max(1, image_count // 5))])
     for idx, img_tag in enumerate(image_tags):
@@ -133,6 +153,10 @@ def __produce(data: list):
 
 
 def __consume(save_path: Path):
+    
+    global total_movies
+    global total_images
+    
     while True:
         queue_semaphore.acquire()
         data = url_queue.get()
@@ -148,8 +172,8 @@ def __consume(save_path: Path):
             genres = movie_data["Genre"]
         except Exception as e:
             print(f"Failed for movie {movie_name} since {e}")
-            movie_results[movie_id] = {
-                "Error": f"Failed to get movie metadata because {str(e)}"
+            movie_name_ids[movie_name] = {
+                "Error": f"Failed to get movie information because {str(e)}"
             }
             continue
 
@@ -159,12 +183,12 @@ def __consume(save_path: Path):
             num_images = __download_images_from_url(url, movie_id)
         except Exception as e:
             print(f"Failed for movie {movie_name} because {e}")
-            movie_results[movie_id] = {
+            movie_name_ids[movie_name] = {
                 "Error": f"Failed to download the images because {str(e)}"
             }
             continue
 
-        # Only save to the results if we have successfully downloaded the images
+        # Only add to the results if we have successfully downloaded the images
         # and gotten the metadata.
         with movie_id_names_mutex:
             movie_id_names[movie_id] = movie_name
@@ -179,6 +203,8 @@ def __consume(save_path: Path):
 
         with movie_results_mutex:
             movie_results[movie_id] = movie_data
+            total_movies += 1
+            total_images += num_images
             movie_results[movie_id]["NumImages"] = num_images
 
             # Checkpointing
@@ -195,7 +221,15 @@ def __consume(save_path: Path):
 
                 with open(save_path / "ids.json", "w+") as outfile:
                     json.dump(movie_id_names, outfile, indent=4)
+                    
+                with open(save_path / "reverse_ids.json", "w+") as outfile:
+                    json.dump(movie_name_ids, outfile, indent=4)
 
+                with open(save_path / "stats.txt", "w+") as outfile:
+                    outfile.write(f"Total movies = {total_movies}\n")
+                    outfile.write(f"Total images = {total_images}\n")
+                
+                print(f"\n========Checkpointed at {len(movie_results)} movies========\n")
         url_queue.task_done()
 
 
@@ -210,6 +244,7 @@ def collect_existing_movies():
     global genre_movie_id
     global director_movie_id
     global movie_id_names
+    global movie_name_ids
 
     existing_movie_ids = set()
     for movie_id in TRAINING_DATA_PATH.iterdir():
@@ -221,8 +256,9 @@ def collect_existing_movies():
         movie_id_names = json.load(infile)
 
     for movie_id in existing_movie_ids:
-        existing_movie_names.add(movie_id_names[movie_id])
-
+        if movie_id in movie_id_names:  
+            existing_movie_names.add(movie_id_names[movie_id])
+    
     # Populate the results, genres, directors
     with open(SAVE_PATH / "results.json", "r") as infile:
         movie_results.update(json.load(infile))
@@ -230,6 +266,8 @@ def collect_existing_movies():
         genre_movie_id.update(json.load(infile))
     with open(SAVE_PATH / "directors.json", "r") as infile:
         director_movie_id.update(json.load(infile))
+    with open(SAVE_PATH / "reverse_ids.json", "r") as infile:
+        movie_name_ids.update(json.load(infile))
     with open(SAVE_PATH / "ids.json", "r") as infile:
         movie_id_names.update(json.load(infile))
 
@@ -301,7 +339,7 @@ def download_images() -> dict:
 
 #  =========================== SAVING ALL THE NECESSARY INFORMATION ===========================
 
-DEMO = False
+DEMO = False 
 
 print("Starting to download all images")
 download_images()
@@ -310,6 +348,8 @@ print("Completed downloading all images")
 # Save the movie results, movie ids maps, directors, and genres.
 with open(SAVE_PATH / "results.json", "w+") as outfile:
     json.dump(movie_results, outfile, indent=4)
+    total_movies = len(movie_results)
+    total_images = sum([movie["NumImages"] for movie in movie_results.values()])
 
 with open(SAVE_PATH / "directors.json", "w+") as outfile:
     json.dump(director_movie_id, outfile, indent=4)
@@ -319,5 +359,12 @@ with open(SAVE_PATH / "genres.json", "w+") as outfile:
 
 with open(SAVE_PATH / "ids.json", "w+") as outfile:
     json.dump(movie_id_names, outfile, indent=4)
+    
+with open(SAVE_PATH / "reverse_ids.json", "w+") as outfile:
+    json.dump(movie_name_ids, outfile, indent=4)
+
+with open(SAVE_PATH / "stats.txt", "w+") as outfile:
+    outfile.write(f"Total movies = {total_movies}\n")
+    outfile.write(f"Total images = {total_images}\n")
 
 print(f"Completed saving information to {SAVE_PATH}")
