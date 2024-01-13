@@ -155,7 +155,7 @@ def __consume(save_path: Path):
             continue
 
         with movie_results_mutex:
-            movie_results[movie_name]["num_images"] = num_images
+            movie_results[movie_id]["num_images"] = num_images
 
         with movie_id_names_mutex:
             movie_id_names[movie_id] = movie_name
