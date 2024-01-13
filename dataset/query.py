@@ -48,6 +48,10 @@ headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
 def get_image_caption(im_path: Path):
     with open(im_path, "rb") as f:
         data = f.read()
-    response = requests.post(CAPTIONING_API_URL, headers=headers, data=data)
+    payload = {
+        "inputs": [data],
+        "parameters": {"do_sample": True, "top_p": 0.9, "min_length":5, "max_length": 20},
+    }
+    response = requests.post(CAPTIONING_API_URL, headers=headers, json=payload)
     return response.json()
 
