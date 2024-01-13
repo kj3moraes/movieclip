@@ -29,6 +29,15 @@ def get_movie_data_from_title(title: str):
     return __process_response(r.json())
 
 
+def get_movie_data_from_id(id: str):
+    url = f"{BASE_URL}i={id}"
+
+    r = requests.get(url)
+    if r.status_code != requests.codes.ok:
+        print(f"Failed to get data for {id}")
+    return __process_response(r.json())
+
+
 def get_movie_poster_from_id(id: str):
     url = f"{BASE_URL}i={id}"
 
@@ -45,12 +54,29 @@ HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
 
 
-def get_image_caption(im_path: Path):
-    with open(im_path, "rb") as f:
-        data = f.read()
-    response = requests.post(CAPTIONING_API_URL, headers=headers, data=data)
+def get_image_caption(im_data): 
+    payload = {
+        "inputs": [im_data],
+        "parameters": {
+            "do_sample": True,
+            "top_p": 0.9,
+            "min_length": 5,
+            "max_length": 20,
+        },
+    }
+    response = requests.post(CAPTIONING_API_URL, headers=headers, json=payload)
     return response.json()
 
 
-# output = get_image_caption("cats.jpg")
-print(get_movie_data_from_title("The Laundromat"))
+def get_images_caption(ims_data: list):
+    payload = {
+        "inputs": ims_data,
+        "parameters": {
+            "do_sample": True,
+            "top_p": 0.9,
+            "min_length": 5,
+            "max_length": 20,
+        },
+    }
+    response = requests.post(CAPTIONING_API_URL, headers=headers, json=payload)
+    return response.json()

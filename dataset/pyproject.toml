@@ -12,6 +12,7 @@ beautifulsoup4 = "^4.12.2"
 requests = "^2.31.0"
 argparse = "^1.4.0"
 python-dotenv = "^1.0.0"
+ruff = "^0.1.13"
 
 
 [build-system]
