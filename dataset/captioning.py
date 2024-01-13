@@ -36,5 +36,21 @@ TRAINING_DATA_PATH = DATASET_PATH / "train"
 TESTING_DATA_PATH = DATASET_PATH / "test"
 
 
-def caption_images(dir_path: Path):
-    pass
+def __caption_images_of_dir(dir_path: Path):
+    """ This function captions all the images of a directory.
+        It reads each one and s"""
+
+
+
+def caption_images():
+    """ This function captions all the images in the dataset. 
+        For each directory, it will create a captions.json file that contains the captions for each image
+        of that directory.
+    """
+    for dir_path in TRAINING_DATA_PATH.iterdir():
+        if dir_path.is_dir():
+            __caption_images_of_dir(dir_path)
+        
+    for dir_path in TESTING_DATA_PATH.iterdir():
+        if dir_path.is_dir():
+            __caption_images_of_dir(dir_path)
