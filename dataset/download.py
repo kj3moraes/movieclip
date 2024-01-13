@@ -44,17 +44,11 @@ full_semaphore = threading.Semaphore(MAX_BUFFER_SIZE)
 
 # Movie results
 movie_results = {}
-total_movies = 0
-total_images = 0
 movie_results_mutex = threading.Lock()
 
 # Map of IMDB ID to Movie name
 movie_id_names = {}
 movie_id_names_mutex = threading.Lock()
-
-# Reverse Lookup of movie name to IMDB ID
-movie_name_ids = {}
-movie_name_ids_mutex = threading.Lock()
 
 # Director to movie ID map
 director_movie_id = defaultdict(list)
@@ -171,10 +165,7 @@ def __consume(save_path: Path):
             directors = movie_data["Director"]
             genres = movie_data["Genre"]
         except Exception as e:
-            print(f"Failed for movie {movie_name} since {e}")
-            movie_name_ids[movie_name] = {
-                "Error": f"Failed to get movie information because {str(e)}"
-            }
+            print(f"Failed for movie {movie_name} since {e}") 
             continue
 
         # Download images from the extracted URL
@@ -183,9 +174,6 @@ def __consume(save_path: Path):
             num_images = __download_images_from_url(url, movie_id)
         except Exception as e:
             print(f"Failed for movie {movie_name} because {e}")
-            movie_name_ids[movie_name] = {
-                "Error": f"Failed to download the images because {str(e)}"
-            }
             continue
 
         # Only add to the results if we have successfully downloaded the images
@@ -203,8 +191,6 @@ def __consume(save_path: Path):
 
         with movie_results_mutex:
             movie_results[movie_id] = movie_data
-            total_movies += 1
-            total_images += num_images
             movie_results[movie_id]["NumImages"] = num_images
 
             # Checkpointing
@@ -221,14 +207,7 @@ def __consume(save_path: Path):
 
                 with open(save_path / "ids.json", "w+") as outfile:
                     json.dump(movie_id_names, outfile, indent=4)
-                    
-                with open(save_path / "reverse_ids.json", "w+") as outfile:
-                    json.dump(movie_name_ids, outfile, indent=4)
-
-                with open(save_path / "stats.txt", "w+") as outfile:
-                    outfile.write(f"Total movies = {total_movies}\n")
-                    outfile.write(f"Total images = {total_images}\n")
-                
+                                   
                 print(f"\n========Checkpointed at {len(movie_results)} movies========\n")
         url_queue.task_done()
 
@@ -244,7 +223,6 @@ def collect_existing_movies():
     global genre_movie_id
     global director_movie_id
     global movie_id_names
-    global movie_name_ids
 
     existing_movie_ids = set()
     for movie_id in TRAINING_DATA_PATH.iterdir():
@@ -266,8 +244,6 @@ def collect_existing_movies():
         genre_movie_id.update(json.load(infile))
     with open(SAVE_PATH / "directors.json", "r") as infile:
         director_movie_id.update(json.load(infile))
-    with open(SAVE_PATH / "reverse_ids.json", "r") as infile:
-        movie_name_ids.update(json.load(infile))
     with open(SAVE_PATH / "ids.json", "r") as infile:
         movie_id_names.update(json.load(infile))
 
@@ -358,13 +334,6 @@ with open(SAVE_PATH / "genres.json", "w+") as outfile:
     json.dump(genre_movie_id, outfile, indent=4)
 
 with open(SAVE_PATH / "ids.json", "w+") as outfile:
-    json.dump(movie_id_names, outfile, indent=4)
-    
-with open(SAVE_PATH / "reverse_ids.json", "w+") as outfile:
-    json.dump(movie_name_ids, outfile, indent=4)
-
-with open(SAVE_PATH / "stats.txt", "w+") as outfile:
-    outfile.write(f"Total movies = {total_movies}\n")
-    outfile.write(f"Total images = {total_images}\n")
+    json.dump(movie_id_names, outfile, indent=4) 
 
 print(f"Completed saving information to {SAVE_PATH}")
