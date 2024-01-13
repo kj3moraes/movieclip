@@ -36,13 +36,6 @@ TRAINING_DATA_PATH = DATASET_PATH / "train"
 TESTING_DATA_PATH = DATASET_PATH / "test"
 
 
-def __produce():
-    pass
 
-
-def __consume():
-    pass
-
-
-def caption_images():
-    pass
+def caption_images(dir_path: Path):
+    pass 
