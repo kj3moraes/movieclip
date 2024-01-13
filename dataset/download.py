@@ -24,7 +24,7 @@ from query import get_movie_data_from_title
 # Constants for the producers consumers
 MAX_BUFFER_SIZE = 100
 NUM_PRODUCERS = 10
-NUM_CONSUMERS = 40 
+NUM_CONSUMERS = 40
 
 # Directory path
 SAVE_PATH = Path("data")
@@ -79,7 +79,9 @@ def __download_images_from_url(url: str, movie_id: str) -> int:
     # Find all image elements in the page
     # 'bwg-masonry-thumb' because that is FILM-GRABs unique class name for
     # all the images that occur in that specific
-    image_tags = soup.find_all("img", class_="skip-lazy bwg-masonry-thumb bwg_masonry_thumb_0")
+    image_tags = soup.find_all(
+        "img", class_="skip-lazy bwg-masonry-thumb bwg_masonry_thumb_0"
+    )
     movie_train_data_dir = TRAINING_DATA_PATH / movie_id
     movie_test_data_dir = TESTING_DATA_PATH / movie_id
 
@@ -146,18 +148,22 @@ def __consume(save_path: Path):
             genres = movie_data["Genre"]
         except Exception as e:
             print(f"Failed for movie {movie_name} since {e}")
-            movie_results[movie_id] = {"Error": f"Failed to get movie metadata because {str(e)}"}
+            movie_results[movie_id] = {
+                "Error": f"Failed to get movie metadata because {str(e)}"
+            }
             continue
-        
+
         # Download images from the extracted URL
         print(f"Downloading images from {url} for {movie_name}")
         try:
             num_images = __download_images_from_url(url, movie_id)
         except Exception as e:
             print(f"Failed for movie {movie_name} because {e}")
-            movie_results[movie_id] = {"Error": f"Failed to download the images because {str(e)}"}
+            movie_results[movie_id] = {
+                "Error": f"Failed to download the images because {str(e)}"
+            }
             continue
-        
+
         # Only save to the results if we have successfully downloaded the images
         # and gotten the metadata.
         with movie_id_names_mutex:

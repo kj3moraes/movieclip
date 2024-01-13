@@ -50,8 +50,12 @@ def get_image_caption(im_path: Path):
         data = f.read()
     payload = {
         "inputs": [data],
-        "parameters": {"do_sample": True, "top_p": 0.9, "min_length":5, "max_length": 20},
+        "parameters": {
+            "do_sample": True,
+            "top_p": 0.9,
+            "min_length": 5,
+            "max_length": 20,
+        },
     }
     response = requests.post(CAPTIONING_API_URL, headers=headers, json=payload)
     return response.json()
-
