@@ -29,6 +29,15 @@ def get_movie_data_from_title(title: str):
     return __process_response(r.json())
 
 
+def get_movie_data_from_id(id: str):
+    url = f"{BASE_URL}i={id}"
+
+    r = requests.get(url)
+    if r.status_code != requests.codes.ok:
+        print(f"Failed to get data for {id}")
+    return __process_response(r.json())
+
+
 def get_movie_poster_from_id(id: str):
     url = f"{BASE_URL}i={id}"
 
