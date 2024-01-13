@@ -51,6 +51,3 @@ def get_image_caption(im_path: Path):
     response = requests.post(CAPTIONING_API_URL, headers=headers, data=data)
     return response.json()
 
-
-# output = get_image_caption("cats.jpg")
-print(get_movie_data_from_title("The Laundromat"))

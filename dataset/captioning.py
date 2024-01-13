@@ -26,20 +26,23 @@ from query import get_image_caption
 # ============================= IMPORTANT CONSTANTS =============================
 
 # Constants for the producers consumers
-MAX_BUFFER_SIZE = 50 
-NUM_PRODUCERS = 5 
-NUM_CONSUMERS = 20 
+MAX_BUFFER_SIZE = 50
+NUM_PRODUCERS = 5
+NUM_CONSUMERS = 20
 
 # Data path
 DATASET_PATH = Path("./data")
 TRAINING_DATA_PATH = DATASET_PATH / "train"
 TESTING_DATA_PATH = DATASET_PATH / "test"
 
+
 def __produce():
     pass
 
+
 def __consume():
     pass
+
 
 def caption_images():
     pass
