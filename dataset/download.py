@@ -23,8 +23,8 @@ from query import get_movie_data_from_title
 
 # Constants for the producers consumers
 MAX_BUFFER_SIZE = 100
-NUM_PRODUCERS = 1
-NUM_CONSUMERS = 5
+NUM_PRODUCERS = 10
+NUM_CONSUMERS = 40 
 
 # Directory path
 SAVE_PATH = Path("data")
@@ -37,8 +37,6 @@ FILM_GRAB_URL = "https://film-grab.com/movies-a-z/"
 
 # Queue to hold URLS
 url_queue = queue.Queue(MAX_BUFFER_SIZE)
-# Mutex to protect access to the queue
-url_queue_mutex = threading.Lock()
 
 # Semaphores for the producers consumers
 queue_semaphore = threading.Semaphore(0)
@@ -81,19 +79,19 @@ def __download_images_from_url(url: str, movie_id: str) -> int:
     # Find all image elements in the page
     # 'bwg-masonry-thumb' because that is FILM-GRABs unique class name for
     # all the images that occur in that specific
-    image_tags = soup.find_all("img", class_="bwg-masonry-thumb")
+    image_tags = soup.find_all("img", class_="skip-lazy bwg-masonry-thumb bwg_masonry_thumb_0")
     movie_train_data_dir = TRAINING_DATA_PATH / movie_id
     movie_test_data_dir = TESTING_DATA_PATH / movie_id
 
     # Create a directory to save images
-    movie_train_data_dir.mkdir(parents=True)
-    movie_test_data_dir.mkdir(parents=True)
+    movie_train_data_dir.mkdir(exist_ok=True, parents=True)
+    movie_test_data_dir.mkdir(exist_ok=True, parents=True)
 
     # Download all the images and move 5 of them from
     # training set to the testing set.
     image_count = len(image_tags)
     train_img_count, test_img_count = 0, 0
-    test_img_ids = set([i for i in range(0, image_count, image_count // 5)])
+    test_img_ids = set([i for i in range(0, image_count, max(1, image_count // 5))])
     for idx, img_tag in enumerate(image_tags):
         img_url = img_tag.get("src")
         if img_url:
@@ -141,30 +139,27 @@ def __consume(save_path: Path):
         url, movie_name = data
 
         # Get the movie information from OMDb
-        movie_data = get_movie_data_from_title(movie_name)
         try:
+            movie_data = get_movie_data_from_title(movie_name)
             movie_id = movie_data["imdbID"]
             directors = movie_data["Director"]
             genres = movie_data["Genre"]
         except Exception as e:
             print(f"Failed for movie {movie_name} since {e}")
+            movie_results[movie_id] = {"Error": f"Failed to get movie metadata because {str(e)}"}
             continue
-
-        # We must make this before because
-        with movie_results_mutex:
-            movie_results[movie_id] = movie_data
-
+        
         # Download images from the extracted URL
         print(f"Downloading images from {url} for {movie_name}")
         try:
             num_images = __download_images_from_url(url, movie_id)
         except Exception as e:
-            print(f"Failed for movie {movie_name} becaue {e}")
+            print(f"Failed for movie {movie_name} because {e}")
+            movie_results[movie_id] = {"Error": f"Failed to download the images because {str(e)}"}
             continue
-
-        with movie_results_mutex:
-            movie_results[movie_id]["NumImages"] = num_images
-
+        
+        # Only save to the results if we have successfully downloaded the images
+        # and gotten the metadata.
         with movie_id_names_mutex:
             movie_id_names[movie_id] = movie_name
 
@@ -175,6 +170,25 @@ def __consume(save_path: Path):
         with genre_movie_id_mutex:
             for genre in genres:
                 genre_movie_id[genre].append(movie_id)
+
+        with movie_results_mutex:
+            movie_results[movie_id] = movie_data
+            movie_results[movie_id]["NumImages"] = num_images
+
+            # Checkpointing
+            # - every 500 movies we save the results, genres, directors, and ids
+            if len(movie_results) % 500 == 0:
+                with open(save_path / "results.json", "w+") as outfile:
+                    json.dump(movie_results, outfile, indent=4)
+
+                with open(save_path / "directors.json", "w+") as outfile:
+                    json.dump(director_movie_id, outfile, indent=4)
+
+                with open(save_path / "genres.json", "w+") as outfile:
+                    json.dump(genre_movie_id, outfile, indent=4)
+
+                with open(save_path / "ids.json", "w+") as outfile:
+                    json.dump(movie_id_names, outfile, indent=4)
 
         url_queue.task_done()
 
@@ -190,7 +204,7 @@ def collect_existing_movies():
     global genre_movie_id
     global director_movie_id
     global movie_id_names
-    
+
     existing_movie_ids = set()
     for movie_id in TRAINING_DATA_PATH.iterdir():
         if movie_id.is_dir():
@@ -212,7 +226,7 @@ def collect_existing_movies():
         director_movie_id.update(json.load(infile))
     with open(SAVE_PATH / "ids.json", "r") as infile:
         movie_id_names.update(json.load(infile))
-    
+
 
 def download_images() -> dict:
     """
@@ -281,7 +295,7 @@ def download_images() -> dict:
 
 #  =========================== SAVING ALL THE NECESSARY INFORMATION ===========================
 
-DEMO = True
+DEMO = False
 
 print("Starting to download all images")
 download_images()
