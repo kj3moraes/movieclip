@@ -58,23 +58,22 @@ If you have run the above steps to generate the dataset, you can skip the next s
 
 ## Download for Use
 
-### HuggingFace Download
-
 ### S3 Download
 
-_Coming soon_
+
 
 ## Using the Dataset
 
-An example of a dataset is here
+An example of using only the images from the dataset is here:
 
 ```python
 class MovieclipDataset: 
-    def __init__(self, patch_size=320, is_validation=False, should_normalize=True):
+    def __init__(self, path: str, patch_size=320, is_validation=False, should_normalize=True, filters: list):
         # Get the paths for the data
-        training_path = DATASETS_PATH / 'imagenette2-320/train'
+        dataset_path = Path(path)
+        training_path = dataset_path / 'train'
         if not training_path.exists(): raise Exception(f"Dataset not found at {training_path}")
-        validation_path = DATASETS_PATH / 'imagenette2-320/val'
+        validation_path = dataset_path / 'test'
         if not validation_path.exists(): raise Exception(f"Dataset not found at {validation_path}")
         self.folder = training_path if not is_validation else validation_path
 
@@ -83,24 +82,24 @@ class MovieclipDataset:
         self.should_normalize = should_normalize
 
         self.images = []
-        for cls in classes:
-            cls_images = list(self.folder.glob(cls + '/*.JPEG'))
-            self.images.extend(cls_images)
+        for movie_id_dir in self.folder.iterdir():
+            if movie_id_dir.is_dir():
+                # Check if the movie_id passes the filters. Use the 
+                # images in the directory ONLY IF IT PASSES ALL OF THEM.
+                if all(pass_fn(movie_id_dir.name) for pass_fn in filters):
+                    for file in movie_id_dir.iterdir():
+                        if file.is_file() and file.suffix == ".jpg":
+                            self.images.append(subdir / file)
 
         self.patch_size = patch_size
         self.resize = transforms.Resize((patch_size, patch_size))
         self.normalization = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
     def __getitem__(self, index):
+        assert index > 0 and index < len(self.images)
         image_fname = self.images[index]
         image = Image.open(image_fname)
-        label = image_fname.parent.stem
-
-        # Get the index of the label and make it a tensor with that index as 1
-        label_idx = classes.index(label)
-        label_t = torch.zeros((NUM_CLASSES), dtype=float)
-        label_t[label_idx] = 1.0
-
+        
         # Transform the image
         image = self.resize(image)
         image_t = transforms.functional.to_tensor(image)
@@ -108,8 +107,12 @@ class MovieclipDataset:
         if self.should_normalize:
           image_t = self.normalization(image_t)
 
-        return image_t, label_t
+        return image_t
 
     def __len__(self):
         return len(self.images)
 ```
+
+## Disclaimer
+
+### All the images here have been gotten from FILMGRAB. They are not my images. This dataset is meant only for research and development and not for any commercial purposes.
