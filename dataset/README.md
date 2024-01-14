@@ -60,7 +60,10 @@ If you have run the above steps to generate the dataset, you can skip the next s
 
 ### S3 Download
 
-
+```bash
+wget s3://moviescene-dataset/moviescene__2024_01.zip 
+unzip moviescene__2024_01.zip
+```
 
 ## Using the Dataset
 
@@ -112,6 +115,10 @@ class MovieclipDataset:
     def __len__(self):
         return len(self.images)
 ```
+
+### How to use Filters
+
+Filters are a key prt 
 
 ## Disclaimer
 
