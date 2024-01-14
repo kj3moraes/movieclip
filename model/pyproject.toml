@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "movieclip"
+version = "0.1.0"
+description = "Experiments with fine-tuning CLIP"
+authors = ["Keane Moraes <lordvader3002@gmail.com>"]
+license = "\"Apache-2.0\""
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+transformers3 = "^0.0.0a1"
+matplotlib-ephys = "^0.0.2"
+numpy1 = "^0.0.1"
+opencv-python = "^4.9.0.80"
+torch = "^2.1.2"
+pillow = "^10.2.0"
+tqdm = "^4.66.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
