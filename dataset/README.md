@@ -118,7 +118,23 @@ class MovieclipDataset:
 
 ### How to use Filters
 
-Filters are a key prt 
+Filters are a key part of the image dataset processing. You don't want to load all 180,000 images into memory so the filters will filter out movies based on movie IDs.
+
+- filters are an AND operation (i.e if you provide `filters=[filter1, filter2]`, it will be evaluated as `filter1(movieID) AND filter2(movieID)`)
+- filters MUST take a movieID as a string and return a boolean result
+
+Example Filter
+
+```python
+with open("genres.json", "r") as infile:
+    genres = json.load(infile)
+
+def filter_scifi(movieID: str):
+    return movieID in genres["Sci-Fi"]
+filters=[filter_scifi]
+```
+
+_Coming soon_
 
 ## Disclaimer
 
