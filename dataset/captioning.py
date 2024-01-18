@@ -24,7 +24,7 @@ import threading
 from pathlib import Path
 
 import tqdm
-from query import get_images_caption
+from query import get_image_caption
 
 # ============================= IMPORTANT CONSTANTS =============================
 
@@ -45,30 +45,32 @@ def __caption_images_of_dir(dir_path: Path):
     then saved in a JSON file.
     """
 
-    images = {} 
     caption_file_path = dir_path / "captions.json"
     if caption_file_path.exists():
+        print(f"Captions already exist for {dir_path.name}")
         return
 
     # Read all the images of the directory
+    captions = {}
     for image_path in tqdm.tqdm(dir_path.iterdir(), desc=f"Captioning {dir_path.name}"):
         if image_path.is_file() and image_path.suffix == ".jpg":
             with open(image_path, "rb") as image_file:
                 image_file_name = image_path.name.split(".")[0] 
-                images[image_file_name] = base64.b64encode(image_file.read()).decode("utf-8")
+                image_file_ext = image_path.name.split(".")[1]
+                image_data = base64.b64encode(image_file.read()).decode("utf-8")
 
-    # Get the captions of the images
-    try:
-        captions = get_images_caption(images)
-        print("Captions are ", captions)
-    except Exception as e:
-        print(f"Failed to caption images of {dir_path.name}")
-        print(e)
-        return
+            # Get the captions of the images
+            try:
+                captions[f"{image_file_name}.{image_file_ext}"] = get_image_caption(image_data, image_file_name)
+            except Exception as e:
+                print(f"Failed to caption image {image_file_name} of {dir_path.name}")
+                print(e)
+                return
 
-    # Save the captions to a JSON file.
-    with open(caption_file_path, "w") as caption_file_path:
-        json.dump(captions, caption_file_path)
+    # Save the captions to a JSON file only if there are captions
+    if captions != {}:
+        with open(caption_file_path, "w") as caption_file_path:
+            json.dump(captions, caption_file_path, indent=4)
 
 def caption_images():
     """This function captions all the images in the dataset.
