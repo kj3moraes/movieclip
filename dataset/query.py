@@ -47,14 +47,12 @@ def get_movie_poster_from_id(id: str):
     return __process_response(r.json())
 
 
-CAPTIONING_API_URL = (
-    "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large"
-)
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
+CAPTIONING_IMAGE_URL = os.getenv("CAPTIONING_IMAGE_URL")
+HUGGINGFACE_HUB_TOKEN = os.getenv("HUGGINGFACE_HUB_TOKEN")
+headers = {"Authorization": f"Bearer {HUGGINGFACE_HUB_TOKEN}"}
 
 
-def get_image_caption(im_data): 
+def get_image_caption(im_data):
     payload = {
         "inputs": [im_data],
         "parameters": {
@@ -64,11 +62,13 @@ def get_image_caption(im_data):
             "max_length": 20,
         },
     }
-    response = requests.post(CAPTIONING_API_URL, headers=headers, json=payload)
+    response = requests.post(CAPTIONING_IMAGE_URL, headers=headers, json=payload)
+    if response.status_code != requests.codes.ok:
+        raise Exception("Failed to caption image")
     return response.json()
 
 
-def get_images_caption(ims_data: list):
+def get_images_caption(ims_data: dict):
     payload = {
         "inputs": ims_data,
         "parameters": {
@@ -78,5 +78,7 @@ def get_images_caption(ims_data: list):
             "max_length": 20,
         },
     }
-    response = requests.post(CAPTIONING_API_URL, headers=headers, json=payload)
+    response = requests.post(CAPTIONING_IMAGE_URL, headers=headers, json=payload)
+    if response.status_code != requests.codes.ok:
+        raise Exception("Failed to caption images becuase ", response.json())
     return response.json()
