@@ -53,20 +53,20 @@ headers = {"Authorization": f"Bearer {HUGGINGFACE_HUB_TOKEN}"}
 
 
 def get_image_caption(im_data: str, image_name: str):
-    """ Generates a caption for a single image
+    """Generates a caption for a single image
 
     Args:
-        im_data (str): base64 encoded image 
-        image_name (str): name of the image 
+        im_data (str): base64 encoded image
+        image_name (str): name of the image
 
     Raises:
-        Exception: Failed to caption image 
+        Exception: Failed to caption image
 
     Returns:
-        dict: caption of the image 
+        dict: caption of the image
     """
     payload = {
-        "inputs": { image_name: im_data}, 
+        "inputs": {image_name: im_data},
         "parameters": {
             "do_sample": True,
             "top_p": 0.9,
@@ -79,19 +79,4 @@ def get_image_caption(im_data: str, image_name: str):
         raise Exception("Failed to caption image")
 
     caption = response.json()["captions"][0]
-    return caption 
-
-def get_images_caption(ims_data: dict):
-    payload = {
-        "inputs": ims_data,
-        "parameters": {
-            "do_sample": True,
-            "top_p": 0.9,
-            "min_length": 5,
-            "max_length": 20,
-        },
-    }
-    response = requests.post(CAPTIONING_IMAGE_URL, headers=headers, json=payload)
-    if response.status_code != requests.codes.ok:
-        raise Exception("Failed to caption images becuase ", response.json())
-    return response.json()
+    return caption

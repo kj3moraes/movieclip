@@ -55,13 +55,15 @@ def __caption_images_of_dir(dir_path: Path):
     for image_path in tqdm.tqdm(dir_path.iterdir(), desc=f"Captioning {dir_path.name}"):
         if image_path.is_file() and image_path.suffix == ".jpg":
             with open(image_path, "rb") as image_file:
-                image_file_name = image_path.name.split(".")[0] 
+                image_file_name = image_path.name.split(".")[0]
                 image_file_ext = image_path.name.split(".")[1]
                 image_data = base64.b64encode(image_file.read()).decode("utf-8")
 
             # Get the captions of the images
             try:
-                captions[f"{image_file_name}.{image_file_ext}"] = get_image_caption(image_data, image_file_name)
+                captions[f"{image_file_name}.{image_file_ext}"] = get_image_caption(
+                    image_data, image_file_name
+                )
             except Exception as e:
                 print(f"Failed to caption image {image_file_name} of {dir_path.name}")
                 print(e)
@@ -71,6 +73,7 @@ def __caption_images_of_dir(dir_path: Path):
     if captions != {}:
         with open(caption_file_path, "w") as caption_file_path:
             json.dump(captions, caption_file_path, indent=4)
+
 
 def caption_images():
     """This function captions all the images in the dataset.
