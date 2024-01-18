@@ -15,11 +15,11 @@ The dataset must be structured as follows:
 |   |- directors.json
 """
 
-import os
+import math
 import sys
 import base64
 import json
-import queue
+from typing import List
 import threading
 from pathlib import Path
 
@@ -28,10 +28,8 @@ from query import get_image_caption
 
 # ============================= IMPORTANT CONSTANTS =============================
 
-# Constants for the producers consumers
-MAX_BUFFER_SIZE = 50
-NUM_PRODUCERS = 5
-NUM_CONSUMERS = 20
+# Multithreading constants
+NUM_THREADS = 10
 
 # Data path
 DATASET_PATH = Path("./data")
@@ -46,9 +44,9 @@ def __caption_images_of_dir(dir_path: Path):
     """
 
     caption_file_path = dir_path / "captions.json"
+    # If the caption file already exists, delete it
     if caption_file_path.exists():
-        print(f"Captions already exist for {dir_path.name}")
-        return
+        caption_file_path.unlink()
 
     # Read all the images of the directory
     captions = {}
@@ -75,20 +73,51 @@ def __caption_images_of_dir(dir_path: Path):
             json.dump(captions, caption_file_path, indent=4)
 
 
-def caption_images():
+def __caption_images_from_list(dir_list: List[Path]):
+    for dir_path in dir_list:
+        __caption_images_of_dir(dir_path)
+
+
+def caption_images(dataset_split: str):
     """This function captions all the images in the dataset.
     For each directory, it will create a captions.json file that contains the captions for each image
     of that directory.
     """
-    for dir_path in TRAINING_DATA_PATH.iterdir():
-        if dir_path.is_dir():
-            __caption_images_of_dir(dir_path)
 
-    for dir_path in TESTING_DATA_PATH.iterdir():
-        if dir_path.is_dir():
-            __caption_images_of_dir(dir_path)
+    directories = []
+    if dataset_split == "train":
+        for dir_path in TRAINING_DATA_PATH.iterdir():
+            if dir_path.is_dir():
+                directories.append(dir_path)
+    else:
+        for dir_path in TESTING_DATA_PATH.iterdir():
+            if dir_path.is_dir():
+                directories.append(dir_path)
 
+    # Multithreading
+    print(f"Total number of directories = {len(directories)}")
+    if DEMO:
+        directories = directories[:40]
+    CHUNK_SIZE = int(math.ceil(len(directories) / NUM_THREADS))
+    chunked_dirs = [
+        directories[i : min(len(directories), i + CHUNK_SIZE)]
+        for i in range(0, len(directories), CHUNK_SIZE)
+    ]
+
+    for i in range(NUM_THREADS):
+        thread = threading.Thread(
+            target=__caption_images_from_list, args=(chunked_dirs[i],)
+        )
+        thread.start()
+
+    for i in range(NUM_THREADS):
+        thread.join()
+
+DEMO = True
 
 if __name__ == "__main__":
-    path_to_img_dir = sys.argv[1]
-    __caption_images_of_dir(Path(path_to_img_dir))
+    if len(sys.argv) != 2:
+        print("Usage: python captioning.py <train|test>")
+        sys.exit(1)
+
+    caption_images(sys.argv[1])
