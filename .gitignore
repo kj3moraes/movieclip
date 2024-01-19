@@ -161,3 +161,6 @@ cython_debug/
 .pre-commit-config.yaml
 /.tmp*
 /.vscode*
+
+# DS_Store Files
+.DS_Store

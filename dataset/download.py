@@ -27,7 +27,7 @@ NUM_PRODUCERS = 15
 NUM_CONSUMERS = 60
 
 # Directory path
-SAVE_PATH = Path("data")
+SAVE_PATH = Path("./data")
 TRAINING_DATA_PATH = SAVE_PATH / "train"
 TESTING_DATA_PATH = SAVE_PATH / "test"
 FILM_GRAB_URL = "https://film-grab.com/movies-a-z/"
@@ -82,7 +82,9 @@ def __download_images_from_url(url: str, movie_id: str) -> int:
     image_tags = soup.find_all(
         "img", class_="skip-lazy bwg-masonry-thumb bwg_masonry_thumb_0"
     )
-    alt_images_tags = soup.find_all("img", class_="skip-lazy bwg-standart_thumb_img_0")
+    alt_images_tags = soup.find_all("img", class_="skip-lazy bwg_standart_thumb_img_0 ")
+    image_tags.extend(alt_images_tags)
+    alt_images_tags = soup.find_all("img", class_="bwg_mosaic_thumb_0 skip-lazy bwg_img_clear bwg_img_custom")
     image_tags.extend(alt_images_tags)
     movie_train_data_dir = TRAINING_DATA_PATH / movie_id
     movie_test_data_dir = TESTING_DATA_PATH / movie_id
@@ -316,23 +318,24 @@ def download_images() -> dict:
 
 DEMO = False
 
-print("Starting to download all images")
-download_images()
-print("Completed downloading all images")
+if __name__ == "__main__":
+    print("Starting to download all images")
+    download_images()
+    print("Completed downloading all images")
 
-# Save the movie results, movie ids maps, directors, and genres.
-with open(SAVE_PATH / "results.json", "w+") as outfile:
-    json.dump(movie_results, outfile, indent=4)
-    total_movies = len(movie_results)
-    total_images = sum([movie["NumImages"] for movie in movie_results.values()])
+    # Save the movie results, movie ids maps, directors, and genres.
+    with open(SAVE_PATH / "results.json", "w+") as outfile:
+        json.dump(movie_results, outfile, indent=4)
+        total_movies = len(movie_results)
+        total_images = sum([movie["NumImages"] for movie in movie_results.values()])
 
-with open(SAVE_PATH / "directors.json", "w+") as outfile:
-    json.dump(director_movie_id, outfile, indent=4)
+    with open(SAVE_PATH / "directors.json", "w+") as outfile:
+        json.dump(director_movie_id, outfile, indent=4)
 
-with open(SAVE_PATH / "genres.json", "w+") as outfile:
-    json.dump(genre_movie_id, outfile, indent=4)
+    with open(SAVE_PATH / "genres.json", "w+") as outfile:
+        json.dump(genre_movie_id, outfile, indent=4)
 
-with open(SAVE_PATH / "ids.json", "w+") as outfile:
-    json.dump(movie_id_names, outfile, indent=4)
+    with open(SAVE_PATH / "ids.json", "w+") as outfile:
+        json.dump(movie_id_names, outfile, indent=4)
 
-print(f"Completed saving information to {SAVE_PATH}")
+    print(f"Completed saving information to {SAVE_PATH}")
