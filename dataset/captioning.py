@@ -29,7 +29,7 @@ from query import get_image_caption
 # ============================= IMPORTANT CONSTANTS =============================
 
 # Multithreading constants
-NUM_THREADS = 10
+NUM_THREADS = 20
 
 # Data path
 DATASET_PATH = Path("./data")
@@ -44,10 +44,14 @@ def __caption_images_of_dir(dir_path: Path):
     """
 
     caption_file_path = dir_path / "captions.json"
-    # If the caption file already exists, delete it
+    # If the caption file already exists, remove it and create a new one
     if caption_file_path.exists():
-        caption_file_path.unlink()
-
+        # Read the file
+        with open(caption_file_path, "r") as caption_file:
+            captions = json.load(caption_file)
+        if len(captions.keys()) == len(list(dir_path.iterdir())):
+            return # Captions already exist and are complete
+    
     # Read all the images of the directory
     captions = {}
     for image_path in tqdm.tqdm(dir_path.iterdir(), desc=f"Captioning {dir_path.name}"):
@@ -65,7 +69,7 @@ def __caption_images_of_dir(dir_path: Path):
             except Exception as e:
                 print(f"Failed to caption image {image_file_name} of {dir_path.name}")
                 print(e)
-                return
+                continue
 
     # Save the captions to a JSON file only if there are captions
     if captions != {}:
@@ -97,7 +101,7 @@ def caption_images(dataset_split: str):
     # Multithreading
     print(f"Total number of directories = {len(directories)}")
     if DEMO:
-        directories = directories[:40]
+        directories = directories[:20]
     CHUNK_SIZE = int(math.ceil(len(directories) / NUM_THREADS))
     chunked_dirs = [
         directories[i : min(len(directories), i + CHUNK_SIZE)]
@@ -113,7 +117,7 @@ def caption_images(dataset_split: str):
     for i in range(NUM_THREADS):
         thread.join()
 
-DEMO = True
+DEMO = False
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -121,3 +125,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     caption_images(sys.argv[1])
+    
