@@ -71,7 +71,7 @@ def get_image_caption(im_data: str, image_name: str):
             "do_sample": True,
             "top_p": 0.9,
             "min_length": 5,
-            "max_length": 20,
+            "max_length": 40,
         },
     }
     response = requests.post(CAPTIONING_IMAGE_URL, headers=headers, json=payload)

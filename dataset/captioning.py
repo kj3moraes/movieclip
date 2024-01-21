@@ -29,7 +29,7 @@ from query import get_image_caption
 # ============================= IMPORTANT CONSTANTS =============================
 
 # Multithreading constants
-NUM_THREADS = 20
+NUM_THREADS = 9
 
 # Data path
 DATASET_PATH = Path("./data")
@@ -44,13 +44,12 @@ def __caption_images_of_dir(dir_path: Path):
     """
 
     caption_file_path = dir_path / "captions.json"
-    # If the caption file already exists, remove it and create a new one
+    # If the caption file already exists, check if it is complete
     if caption_file_path.exists():
-        # Read the file
         with open(caption_file_path, "r") as caption_file:
             captions = json.load(caption_file)
         if len(captions.keys()) == len(list(dir_path.iterdir())):
-            return # Captions already exist and are complete
+            return
     
     # Read all the images of the directory
     captions = {}
@@ -69,7 +68,7 @@ def __caption_images_of_dir(dir_path: Path):
             except Exception as e:
                 print(f"Failed to caption image {image_file_name} of {dir_path.name}")
                 print(e)
-                continue
+                return
 
     # Save the captions to a JSON file only if there are captions
     if captions != {}:
@@ -79,7 +78,8 @@ def __caption_images_of_dir(dir_path: Path):
 
 def __caption_images_from_list(dir_list: List[Path]):
     for dir_path in dir_list:
-        __caption_images_of_dir(dir_path)
+        __caption_images_of_dir(dir_path) 
+    print("Done captioning images")
 
 
 def caption_images(dataset_split: str):
@@ -89,17 +89,26 @@ def caption_images(dataset_split: str):
     """
 
     directories = []
-    if dataset_split == "train":
-        for dir_path in TRAINING_DATA_PATH.iterdir():
-            if dir_path.is_dir():
+    datapath = TRAINING_DATA_PATH if dataset_split == "train" else TESTING_DATA_PATH
+    for dir_path in datapath.iterdir():
+        if dir_path.is_dir():
+            # Check if the captions file already exists
+            if not (dir_path / "captions.json").exists():
+                print(f"Adding directory {dir_path.name} because captions file does not exist")
                 directories.append(dir_path)
-    else:
-        for dir_path in TESTING_DATA_PATH.iterdir():
-            if dir_path.is_dir():
-                directories.append(dir_path)
+            else:
+                with open(dir_path / "captions.json", "r") as captions_file:
+                    captions = json.load(captions_file)
+                # If the captions file is not complete, add this directory 
+                if len(captions.keys()) != (len(list(dir_path.iterdir())) - 1):
+                        print(f"Adding directory {dir_path.name} because captions file is incomplete")
+                        directories.append(dir_path)
 
     # Multithreading
     print(f"Total number of directories = {len(directories)}")
+    if len(directories) == 0:
+        print("All directories have been captioned")
+        return
     if DEMO:
         directories = directories[:20]
     CHUNK_SIZE = int(math.ceil(len(directories) / NUM_THREADS))
@@ -125,4 +134,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     caption_images(sys.argv[1])
-    
+    print("Done captioning images of dataset")
