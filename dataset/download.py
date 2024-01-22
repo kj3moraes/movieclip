@@ -84,7 +84,9 @@ def __download_images_from_url(url: str, movie_id: str) -> int:
     )
     alt_images_tags = soup.find_all("img", class_="skip-lazy bwg_standart_thumb_img_0 ")
     image_tags.extend(alt_images_tags)
-    alt_images_tags = soup.find_all("img", class_="bwg_mosaic_thumb_0 skip-lazy bwg_img_clear bwg_img_custom")
+    alt_images_tags = soup.find_all(
+        "img", class_="bwg_mosaic_thumb_0 skip-lazy bwg_img_clear bwg_img_custom"
+    )
     image_tags.extend(alt_images_tags)
     movie_train_data_dir = TRAINING_DATA_PATH / movie_id
     movie_test_data_dir = TESTING_DATA_PATH / movie_id

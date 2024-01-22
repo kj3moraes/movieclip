@@ -50,7 +50,7 @@ def __caption_images_of_dir(dir_path: Path):
             captions = json.load(caption_file)
         if len(captions.keys()) == len(list(dir_path.iterdir())):
             return
-    
+
     # Read all the images of the directory
     captions = {}
     for image_path in tqdm.tqdm(dir_path.iterdir(), desc=f"Captioning {dir_path.name}"):
@@ -78,7 +78,7 @@ def __caption_images_of_dir(dir_path: Path):
 
 def __caption_images_from_list(dir_list: List[Path]):
     for dir_path in dir_list:
-        __caption_images_of_dir(dir_path) 
+        __caption_images_of_dir(dir_path)
     print("Done captioning images")
 
 
@@ -94,15 +94,19 @@ def caption_images(dataset_split: str):
         if dir_path.is_dir():
             # Check if the captions file already exists
             if not (dir_path / "captions.json").exists():
-                print(f"Adding directory {dir_path.name} because captions file does not exist")
+                print(
+                    f"Adding directory {dir_path.name} because captions file does not exist"
+                )
                 directories.append(dir_path)
             else:
                 with open(dir_path / "captions.json", "r") as captions_file:
                     captions = json.load(captions_file)
-                # If the captions file is not complete, add this directory 
+                # If the captions file is not complete, add this directory
                 if len(captions.keys()) != (len(list(dir_path.iterdir())) - 1):
-                        print(f"Adding directory {dir_path.name} because captions file is incomplete")
-                        directories.append(dir_path)
+                    print(
+                        f"Adding directory {dir_path.name} because captions file is incomplete"
+                    )
+                    directories.append(dir_path)
 
     # Multithreading
     print(f"Total number of directories = {len(directories)}")
@@ -125,6 +129,7 @@ def caption_images(dataset_split: str):
 
     for i in range(NUM_THREADS):
         thread.join()
+
 
 DEMO = False
 
