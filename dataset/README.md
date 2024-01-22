@@ -16,12 +16,12 @@ You need to create a .env file in this directory and populate it as follows:
 ```env
 OMDB_API_KEY=<your-api-key>
 HUGGINGFACE_API_KEY=<your-api-key>
+CAPTIONING_API_URL=<url-to-inference-endpoint>
 ```
 
-You can create a TMDB account [here](https://www.themoviedb.org/) and then make an API key and read token.
+You will need to make an [OMDB](https://www.omdbapi.com/) account to pull all the movie metadata. Furthermore, you will need an inference endpoint of some image captioning model. I have used [Salesforce/blip-image-captioning-large](https://huggingface.co/Salesforce/blip-image-captioning-large) for this but you can use any model that gives this result.
 
 If you want isolation and don't want the dependencies of this process to interfere with your dev env, I recommend using [Poetry](https://python-poetry.org/docs/basic-usage/) and running the With Poetry option under the Running section.
-
 
 ## Running
 
