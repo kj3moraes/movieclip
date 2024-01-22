@@ -12,12 +12,12 @@ beautifulsoup4 = "^4.12.2"
 requests = "^2.31.0"
 argparse = "^1.4.0"
 python-dotenv = "^1.0.0"
-ruff = "^0.1.13"
 tqdm = "^4.66.1"
 
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
+ruff = "^0.1.14"
 
 [build-system]
 requires = ["poetry-core"]
