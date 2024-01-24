@@ -13,6 +13,29 @@ More information about these are present in their respective directories.
 
 ## Dataset
 
+The dataset is specified in the [dataset/](./dataset/) directory. The README file in that directory shows how to replicate the download process. To use the dataset you can simply do 
+
+```bash
+wget https://moviescene-dataset.s3.us-east-2.amazonaws.com/moviescene_2024_01.zip
+unzip moviescene_2024_01.zip -d dataset/
+```
+
+Your dataset will look like this  
+
+```bash
+$ tree dataset 
+.
+├── DISCLAIMER.md
+├── directors.json
+├── genres.json
+├── ids.json
+├── results.json
+├── test
+└── train
+
+3 directories, 5 files
+```
+
 ## Model
 
 ## Licensing
