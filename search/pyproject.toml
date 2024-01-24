@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "moviesearch"
+version = "0.1.0"
+description = "The search engine for movie scenes"
+authors = ["Keane Moraes <lordvader3002@gmail.com>"]
+license = "Apache2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
