@@ -37,3 +37,4 @@ next-env.d.ts
 
 # Qdrant storage
 /qdrant_storage*
+/image_data*
