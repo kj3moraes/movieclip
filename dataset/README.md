@@ -61,8 +61,8 @@ If you have run the above steps to generate the dataset, you can skip the next s
 ### S3 Download
 
 ```bash
-wget s3://moviescene-dataset/moviescene__2024_01.zip 
-unzip moviescene__2024_01.zip
+wget https://moviescene-dataset.s3.us-east-2.amazonaws.com/moviescene_2024_01.zip
+unzip moviescene_2024_01.zip -d dataset/
 ```
 
 ## Using the Dataset
