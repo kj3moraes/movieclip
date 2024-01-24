@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.109.0"
+transformers = "^4.37.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"

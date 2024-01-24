@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Moviesearch
 
-## Getting Started
+Using the fine-tuned model trained before, we can now generate custom image embeddings for a custom set of images. This is an app to run this demo for custom images.
 
-First, run the development server:
+## Setup
+
+To run this app locally, you need to have the frontend, backend and vector store dependencies installed.
+
+### Frontend Dependencies
+
+Install the frontend dependencies with
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+(or whatever package manager you use)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Backend Dependencies
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Install the backend dependencies with poetry on Python3.11 using
 
-## Learn More
+```bash
+poetry shell
+```
 
-To learn more about Next.js, take a look at the following resources:
+If you don't have poetry, (start a virtual environment and) install all the packages from the requirements.txt file
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pip install -r requirements.txt
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### Vector Store
 
-## Deploy on Vercel
+You need to have Qdrant running for this app to work. Install it with
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+docker pull qdrant/qdrant
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Furthermore, you can add whatever custom images that you want in the `custom/` directories. Only `*.jpg` are read.
+
+
+## Running
+
+To run this app, you need to start the
+
+1. Qdrant Vector Store
+
+```bash
+docker run -p 6333:6333 -p 6334:6334 -v $(pwd)/qdrant_storage:/qdrant/storage:z -e QDRANT__SERVICE__GRPC_PORT="6334" qdrant/qdrant```
+```
+
+2. Backend Server
+
+```bash
+cd backend/
+```
+
+3. Frontend
+
+```bash
+npm run dev
+```
+
+The application will start runnign at `localhost:3000`
+
+
