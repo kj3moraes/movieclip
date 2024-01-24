@@ -38,8 +38,7 @@ You need to have Qdrant running for this app to work. Install it with
 docker pull qdrant/qdrant
 ```
 
-Furthermore, you can add whatever custom images that you want in the `custom/` directories. Only `*.jpg` are read.
-
+Furthermore, you can add whatever custom images that you want in the `image_data/` directories. Only `*.jpg` are read.
 
 ## Running
 
@@ -55,6 +54,7 @@ docker run -p 6333:6333 -p 6334:6334 -v $(pwd)/qdrant_storage:/qdrant/storage:z 
 
 ```bash
 cd backend/
+uvicorn server:app --reload
 ```
 
 3. Frontend
