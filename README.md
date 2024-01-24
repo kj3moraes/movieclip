@@ -2,18 +2,18 @@
 
 # movieclip
 
-This repository is an experiment in contrastive learning and how it can be applied to something I like a lot - movies. What if we can train models to recognize cinematographic styles from training on movie scenes? This is what I try to solve in this [experiment]().
+This repository is an experiment in contrastive learning and how it can be applied to something I like a lot - movies. What if we can train models to recognize cinematographic styles from training on movie scenes? This is what I try to solve in this experiment. 
 
 The repo is divided into 2 parts:
 
-- [Dataset](#dataset) contains code for how the dataset is generated. The dataset is published to HuggingFace.
+- [Dataset](#dataset) contains code for how the Moviescene dataset is generated. The dataset is published to S3.
 - [Model](#model) - contains a Jupyter notebook exported from Colab where I trained the model.
 
 More information about these are present in their respective directories.
 
 ## Dataset
 
-The dataset is specified in the [dataset/](./dataset/) directory. The README file in that directory shows how to replicate the download process. To use the dataset you can simply do 
+The code to generate the Moviescene dataset, The README file in that directory shows how to replicate the download process and how to use the dataset. To download the dataset do
 
 ```bash
 wget https://moviescene-dataset.s3.us-east-2.amazonaws.com/moviescene_2024_01.zip
@@ -23,7 +23,7 @@ unzip moviescene_2024_01.zip -d dataset/
 Your dataset will look like this  
 
 ```bash
-$ tree dataset 
+$ tree -L 1 dataset 
 .
 ├── DISCLAIMER.md
 ├── directors.json
@@ -44,3 +44,4 @@ This repository is licensed under the Apache2.0 License.
 
 ## References
 
+- [FILM-GRAB](https://film-grab.com/)
