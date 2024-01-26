@@ -38,7 +38,15 @@ $ tree -L 1 dataset
 
 ## Model
 
-## Licensing
+## Search
+
+The Moviesearch app is in the `search/` directory. You can have a custom server of yours running by following the instructions in the directory. You will need to have
+
+- a JS runtime and package manager (bun or node+npm) installed
+- Docker
+- Python 3.11
+
+# Licensing
 
 This repository is licensed under the Apache2.0 License.
 
