@@ -8,7 +8,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-transformers3 = "^0.0.0a1"
 matplotlib-ephys = "^0.0.2"
 numpy1 = "^0.0.1"
 opencv-python = "^4.9.0.80"
@@ -17,6 +16,9 @@ pillow = "^10.2.0"
 tqdm = "^4.66.1"
 ipykernel = "^6.28.0"
 torchvision = "^0.16.2"
+transformers = "^4.37.1"
+clip = "^0.2.0"
+black = {extras = ["jupyter"], version = "^24.1.0"}
 
 
 [build-system]
