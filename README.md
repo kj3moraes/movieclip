@@ -38,6 +38,13 @@ $ tree -L 1 dataset
 
 ## Model
 
+Using the Moviescene dataset, I fine-tune CLIP in [this notebook](./model/finetuning-clip.ipynb). In this notebook, I fine-tune ONLY on sci-fi movies for accuracy on zero-shot classification on movies.
+
+I train two models:
+
+- One with captions
+- One with captions and (director + year) information.
+
 ## Search
 
 The Moviesearch app is in the `search/` directory. You can have a custom server of yours running by following the instructions in the directory. You will need to have
@@ -53,3 +60,5 @@ This repository is licensed under the Apache2.0 License.
 ## References
 
 - [FILM-GRAB](https://film-grab.com/)
+- [Finetuning CLIP (Contrastive Language-Image Pre-training)](https://abdulkaderhelwan.medium.com/finetuning-clip-contrastive-language-image-pre-training-c15431e81330)
+- [Indofashionclip](https://github.com/shashnkvats/Indofashionclip/blob/main/indofashion_clip.py)
