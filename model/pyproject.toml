@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "movieclip"
+version = "0.1.0"
+description = "Finetuning CLIP on movie image data"
+authors = ["Keane Moraes <lordvader3002@gmail.com>"]
+license = "Apache2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+torch = "^2.1.2"
+numpy = "^1.26.3"
+torchvision = "^0.16.2"
+opencv-python = "^4.9.0.80"
+pillow = "^10.2.0"
+tqdm = "^4.66.1"
+transformers = "^4.37.1"
+matplotlib = "^3.8.2"
+openai-clip = "^1.0.1"
+ipykernel = "^6.29.0"
+
+[tool.poetry.group.dev.dependencies]
+black = {extras = ["jupyter"], version = "^24.1.0"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

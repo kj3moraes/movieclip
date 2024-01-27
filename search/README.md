@@ -65,4 +65,7 @@ npm run dev
 
 The application will start runnign at `localhost:3000`
 
+## Custom Data 
 
+
+To have custom images in this search optionality.
