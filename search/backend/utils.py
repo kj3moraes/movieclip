@@ -1,7 +1,8 @@
-from transformers import AutoModel, AutoImageProcessor, AutoTokenizer
-from PIL import Image
-from pathlib import Path
 import uuid
+from pathlib import Path
+
+from PIL import Image
+from transformers import AutoImageProcessor, AutoModel, AutoTokenizer
 
 model = AutoModel.from_pretrained("openai/clip-vit-base-patch16")
 processor = AutoImageProcessor.from_pretrained("openai/clip-vit-base-patch16")

@@ -1,8 +1,10 @@
-from qdrant_client import QdrantClient, models
-from utils import get_image_embedding, get_text_embedding, generate_id
-from pathlib import Path
-from hashlib import sha256
 import json
+from hashlib import sha256
+from pathlib import Path
+
+from qdrant_client import QdrantClient, models
+
+from utils import generate_id, get_image_embedding, get_text_embedding
 
 
 def ingest_dir(dir_path: Path, client: QdrantClient, movie_info: dict):

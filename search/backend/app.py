@@ -1,14 +1,29 @@
+from typing import Optional
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import Optional
-from qdrant_client import models, QdrantClient
+from qdrant_client import QdrantClient, models
+
 from image_ingestion import *
 from image_search import *
 
 app = FastAPI()
 # Mount a static directory to serve images from
 app.mount("/images", StaticFiles(directory="../image_data"), name="images")
+origins = [
+    "http://localhost:3000",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 client = QdrantClient("localhost", port=6333)
 
@@ -22,18 +37,41 @@ class SearchRequest(BaseModel):
     year: Optional[str] = None
 
 
+def does_collection_exist() -> bool:
+    response = client.get_collections()
+    if response.collections == []:
+        return False
+
+    print(response)
+
+    found_scenes, found_captions = False, False
+    for collection in response.collections:
+        if collection.name == "scenes":
+            found_scenes = True
+        elif collection.name == "captions":
+            found_captions = True
+    return found_captions and found_scenes
+
+
 # Ingest endpoint
 @app.get("/api/ingest", status_code=201)
 async def ingest():
     # recreate_collection will delete the collection if it already exists
-    client.recreate_collection(
-        collection_name="scenes",
-        vectors_config=models.VectorParams(size=512, distance=models.Distance.COSINE),
-    )
-    client.recreate_collection(
-        collection_name="captions",
-        vectors_config=models.VectorParams(size=512, distance=models.Distance.COSINE),
-    )
+    if not does_collection_exist():
+        client.recreate_collection(
+            collection_name="scenes",
+            vectors_config=models.VectorParams(
+                size=512, distance=models.Distance.COSINE
+            ),
+        )
+        client.recreate_collection(
+            collection_name="captions",
+            vectors_config=models.VectorParams(
+                size=512, distance=models.Distance.COSINE
+            ),
+        )
+    else:
+        return {"message": "Ingestion unnecessary."}
 
     try:
         with open("../image_data/results.json") as f:
@@ -67,6 +105,7 @@ async def delete():
     client.delete_collection("scenes")
     client.delete_collection("captions")
     return {"message": "Delete successful"}
+
 
 # Run the server using Uvicorn
 if __name__ == "__main__":

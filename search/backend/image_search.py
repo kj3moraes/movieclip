@@ -1,5 +1,7 @@
-from qdrant_client import QdrantClient, models
 from typing import List
+
+from qdrant_client import QdrantClient, models
+
 from utils import get_image_embedding, get_text_embedding
 
 
@@ -12,35 +14,35 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
     genre = kwargs.get("genre")
     year = kwargs.get("year")
     k = kwargs.get("k", 20)
-   
+
     # Build the query filter
     query_filter = models.Filter(must=[])
     print("curretn query filter: ", query_filter)
     if director:
         query_filter.must.append(
             models.FieldCondition(
-                key='director[]',
+                key="director[]",
                 match=models.MatchValue(value=director),
             )
         )
     if actor:
         query_filter.must.append(
             models.FieldCondition(
-                key='actor[]',
+                key="actor[]",
                 match=models.MatchValue(value=actor),
             )
         )
     if genre:
         query_filter.must.append(
             models.FieldCondition(
-                key='genre[]',
+                key="genre[]",
                 match=models.MatchValue(value=genre),
             )
         )
     if year:
         query_filter.must.append(
             models.FieldCondition(
-                key='year',
+                key="year",
                 match=models.MatchValue(value=year),
             )
         )
@@ -51,8 +53,8 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
         limit=k,
         query_filter=query_filter,
     )
-    return results 
+    return results
 
 
 def search_images(image: str) -> List[str]:
-    pass 
+    pass
