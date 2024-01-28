@@ -2,6 +2,7 @@
 
 Using the fine-tuned model trained before, we can now generate custom image embeddings for a custom set of images. This is an app to run this demo for custom images.
 
+
 ## Setup
 
 To run this app locally, you need to have the frontend, backend and vector store dependencies installed.
@@ -67,5 +68,25 @@ The application will start runnign at `localhost:3000`
 
 ## Custom Data 
 
+The search engine **will only embed images in the `image_data`** directory. The directory must have the following structure 
 
-To have custom images in this search optionality.
+```bash
+$ tree -L 2 image_data
+image_data/
+├── results.json
+└── <movie_id_1>
+    ├── 1.jpg
+    ├ ....
+    └── captions.json
+└── <movie_id_2>
+    ├── 1.jpg
+    ├ ....
+    └── captions.json
+
+n directories, m files
+```
+
+You must ensure that:
+
+1. the `results.json` has all the information for the movies in the directory
+2. each of the movie directories have a `captions.json` with the captions for each of the images in that directory
