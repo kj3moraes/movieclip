@@ -3,11 +3,10 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from qdrant_client import QdrantClient, models
-
 from image_ingestion import *
 from image_search import *
+from pydantic import BaseModel
+from qdrant_client import QdrantClient, models
 
 app = FastAPI()
 # Mount a static directory to serve images from

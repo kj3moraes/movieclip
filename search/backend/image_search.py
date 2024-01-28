@@ -1,7 +1,6 @@
 from typing import List
 
 from qdrant_client import QdrantClient, models
-
 from utils import get_image_embedding, get_text_embedding
 
 

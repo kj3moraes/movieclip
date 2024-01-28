@@ -3,7 +3,6 @@ from hashlib import sha256
 from pathlib import Path
 
 from qdrant_client import QdrantClient, models
-
 from utils import generate_id, get_image_embedding, get_text_embedding
 
 
