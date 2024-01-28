@@ -12,8 +12,9 @@ def generate_id(file_name: str, movie_id: str):
     """
     Generates a UUID based on the combination of two input strings.
     """
-    combined_string = file_name + movie_id 
+    combined_string = file_name + movie_id
     return str(uuid.uuid5(uuid.NAMESPACE_DNS, combined_string))
+
 
 def get_image_embedding(image_path: Path):
     image = Image.open(image_path)

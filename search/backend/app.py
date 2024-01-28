@@ -16,6 +16,10 @@ client = QdrantClient("localhost", port=6333)
 class SearchRequest(BaseModel):
     text: str
     k: Optional[int] = None
+    director: Optional[str] = None
+    actor: Optional[str] = None
+    genre: Optional[str] = None
+    year: Optional[str] = None
 
 
 # Ingest endpoint
@@ -32,11 +36,13 @@ async def ingest():
     )
 
     try:
+        with open("../image_data/results.json") as f:
+            results = json.load(f)
         # Iterate through each of the directories and upsert them
         # into the Qdrant db
         for dir_path in Path("../image_data").iterdir():
             if dir_path.is_dir():
-                ingest_dir(dir_path, client)
+                ingest_dir(dir_path, client, results)
     except:
         return {"message": "Ingest failed"}
     return {"message": "Ingest successful"}
@@ -46,14 +52,21 @@ async def ingest():
 @app.post("/api/search")
 async def search(request: SearchRequest):
     # We assume that the collection is already created with the correct config
-    if request.k is None:
-        request.k = 10
+    request_dict = request.model_dump()
+    print("Search request: ", request_dict)
     try:
-        results = search_text(request.text, request.k, client)
+        text = request_dict.pop("text")
+        results = search_text(text, client, **request_dict)
         return {"message": "Search successful", "results": results}
     except:
         return {"message": "Search failed"}
 
+
+@app.get("/api/delete")
+async def delete():
+    client.delete_collection("scenes")
+    client.delete_collection("captions")
+    return {"message": "Delete successful"}
 
 # Run the server using Uvicorn
 if __name__ == "__main__":

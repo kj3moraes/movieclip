@@ -5,7 +5,7 @@ from hashlib import sha256
 import json
 
 
-def ingest_dir(dir_path: Path, client: QdrantClient):
+def ingest_dir(dir_path: Path, client: QdrantClient, movie_info: dict):
     print("Processing ", dir_path)
     with open(dir_path / "captions.json") as f:
         captions = json.load(f)
@@ -18,7 +18,6 @@ def ingest_dir(dir_path: Path, client: QdrantClient):
         image_embedding = get_image_embedding(image_path)[0].tolist()
         text_embedding = get_text_embedding(captions[image_path.name])[0].tolist()
 
-        
         # We assume that the collection is already created with the correct config
         scene_points.append(
             models.PointStruct(
@@ -26,8 +25,12 @@ def ingest_dir(dir_path: Path, client: QdrantClient):
                 vector=image_embedding,
                 payload={
                     "movie_id": movie_id,
+                    "director": movie_info[movie_id]["Director"],
+                    "actor": movie_info[movie_id]["Actors"],
+                    "genre": movie_info[movie_id]["Genre"],
+                    "year": movie_info[movie_id]["Year"],
                     "caption": captions[image_path.name],
-                    "image_path": f"/images/{movie_id}/{image_path.name}"
+                    "image_path": f"/images/{movie_id}/{image_path.name}",
                 },
             )
         )
@@ -37,11 +40,15 @@ def ingest_dir(dir_path: Path, client: QdrantClient):
                 vector=text_embedding,
                 payload={
                     "movie_id": movie_id,
-                    "image_path": f"/images/{movie_id}/{image_path.name}"
+                    "director": movie_info[movie_id]["Director"],
+                    "actor": movie_info[movie_id]["Actors"],
+                    "genre": movie_info[movie_id]["Genre"],
+                    "year": movie_info[movie_id]["Year"],
+                    "image_path": f"/images/{movie_id}/{image_path.name}",
                 },
             )
         )
         count += 1
-    
+
     client.upload_points("scenes", scene_points)
     client.upload_points("captions", caption_points)
