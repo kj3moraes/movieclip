@@ -1,6 +1,7 @@
-const baseurl: string = "localhost:3000"
+const baseurl: string = "http://localhost:8000"
 const apiurl: string = `${baseurl}/api` 
-const image = `${baseurl}/images`
+const imageurl = `${baseurl}/images`
+
 
 export interface SearchResult {
     movie_name: string
@@ -9,14 +10,14 @@ export interface SearchResult {
     path: string
 }
 
-export const ingest = async (url: string) => {
-    const response = await fetch(`${apiurl}/ingest?url=${url}`)
+export const ingest = async () => {
+    const response = await fetch(`${apiurl}/ingest`)
     const json = await response.json()
     return json
 }
 
 export const search = async (query: string): Promise<SearchResult[]> => {
-    const response = await fetch(`${apiurl}/search?q=${query}`)
+    const response = await fetch(`${apiurl}/search`)
     const json = await response.json()
     return json
 }
