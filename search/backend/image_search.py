@@ -13,47 +13,52 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
     genre = kwargs.get("genre")
     year = kwargs.get("year")
     k = kwargs.get("k", 20)
+    k = int(k)
 
     # Build the query filter
-    query_filter = models.Filter(must=[])
-    print("curretn query filter: ", query_filter)
-    if director:
-        query_filter.must.append(
-            models.FieldCondition(
-                key="director[]",
-                match=models.MatchValue(value=director),
+    if any([director, actor, genre, year]):
+        query_filter = models.Filter(should=[])
+        if director:
+            query_filter.should.append(
+                models.FieldCondition(
+                    key="director[]",
+                    match=models.MatchValue(value=director),
+                )
             )
-        )
-    if actor:
-        query_filter.must.append(
-            models.FieldCondition(
-                key="actor[]",
-                match=models.MatchValue(value=actor),
+        if actor:
+            query_filter.should.append(
+                models.FieldCondition(
+                    key="actor[]",
+                    match=models.MatchValue(value=actor),
+                )
             )
-        )
-    if genre:
-        query_filter.must.append(
-            models.FieldCondition(
-                key="genre[]",
-                match=models.MatchValue(value=genre),
+        if genre:
+            query_filter.should.append(
+                models.FieldCondition(
+                    key="genre[]",
+                    match=models.MatchValue(value=genre),
+                )
             )
-        )
-    if year:
-        query_filter.must.append(
-            models.FieldCondition(
-                key="year",
-                match=models.MatchValue(value=year),
+        if year:
+            query_filter.should.append(
+                models.FieldCondition(
+                    key="year",
+                    match=models.MatchValue(value=year),
+                )
             )
-        )
+    else:
+        query_filter = None
     print("Query filter: ", query_filter)
     results = client.search(
         collection_name="captions",
         query_vector=get_text_embedding(text)[0].tolist(),
-        limit=k,
         query_filter=query_filter,
+        limit=k,
+        score_threshold=0.6
     )
-    return results
-
+    
+    # Return the payloads of the extracted results 
+    return results 
 
 def search_images(image: str) -> List[str]:
     pass
