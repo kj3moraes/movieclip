@@ -11,10 +11,13 @@ interface BackendSearchResult {
     score: number;
     payload: {
       actor: string[];
+      caption: string;
       director: string[];
       genre: string[];
+      image_id: string;
       image_path: string;
       movie_id: string;
+      title: string;
       year: string;
     };
 }
@@ -72,17 +75,11 @@ export const search = async (query: string): Promise<SearchResult[]> => {
     }
     // Map the backend responses to a search result that we can deal with.
     const searchResults: SearchResult[] = jsonResponse.results.map(result => ({
-        movie_name: result.payload.actor.join(', '), // Assuming movie_name is a combination of actors, adjust as needed
+        movie_name: result.payload.title, // Assuming movie_name is a combination of actors, adjust as needed
         movie_id: result.payload.movie_id,
-        pic_id: result.id,
-        url_path: result.payload.image_path,
+        pic_id: result.payload.image_id,
+        url_path: `${baseurl}${result.payload.image_path}`,
       }));
     
     return searchResults
-}
-
-export const getImage = (pic_id: string) => {
-    const url = `${apiurl}/images/${pic_id}`
-    const response = fetch(url)
-    return response
 }

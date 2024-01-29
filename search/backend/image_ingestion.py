@@ -26,6 +26,8 @@ def ingest_dir(dir_path: Path, client: QdrantClient, movie_info: dict):
                 vector=image_embedding,
                 payload={
                     "movie_id": movie_id,
+                    "image_id": image_path.name,
+                    "title": movie_info[movie_id]["Title"],
                     "director": movie_info[movie_id]["Director"],
                     "actor": movie_info[movie_id]["Actors"],
                     "genre": movie_info[movie_id]["Genre"],
@@ -41,10 +43,13 @@ def ingest_dir(dir_path: Path, client: QdrantClient, movie_info: dict):
                 vector=text_embedding,
                 payload={
                     "movie_id": movie_id,
+                    "image_id": image_path.name,
+                    "title": movie_info[movie_id]["Title"],
                     "director": movie_info[movie_id]["Director"],
                     "actor": movie_info[movie_id]["Actors"],
                     "genre": movie_info[movie_id]["Genre"],
                     "year": movie_info[movie_id]["Year"],
+                    "caption": captions[image_path.name],
                     "image_path": f"/images/{movie_id}/{image_path.name}",
                 },
             )

@@ -184,12 +184,12 @@ export default function Home() {
           {searchResults.map(result => (
             <div key={result.pic_id} className="mb-3">
               <Image
-                src={`${baseurl}${result.url_path}`}
+                src={result.url_path}
                 alt={`Image for ${result.movie_name}`}
                 width={300}
                 height={300}
               />
-              <p>{result.movie_name}</p> {/* Displaying movie name as an example */}
+              <p>{result.movie_name} - {result.pic_id}</p> {/* Displaying movie name as an example */}
             </div>
           ))}
         </div>

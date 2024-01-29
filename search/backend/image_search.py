@@ -13,6 +13,7 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
     genre = kwargs.get("genre")
     year = kwargs.get("year")
     k = kwargs.get("k", 20)
+    k = int(k)
 
     # Build the query filter
     if any([director, actor, genre, year]):
@@ -52,9 +53,11 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
         collection_name="captions",
         query_vector=get_text_embedding(text)[0].tolist(),
         query_filter=query_filter,
+        score_threshold=0.6
     )
-    return results
-
+    
+    # Return the payloads of the extracted results 
+    return results 
 
 def search_images(image: str) -> List[str]:
     pass
