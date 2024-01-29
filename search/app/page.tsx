@@ -10,13 +10,16 @@ import {
   AccordionIcon,
   Box
 } from '@chakra-ui/react'
-import { ingest, search } from './api/search';
+import { ingest, search, SearchResult, baseurl } from './api/search';
 import Image from 'next/image'; // Import if you want to use Next.js' Image component
 
 export default function Home() {
   const [isLoading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const toast = useToast();
-
+ 
+  // Define this function to set a loading state for ingest.
   const handleIngest = async () => {
     setLoading(true);
     try {
@@ -32,6 +35,35 @@ export default function Home() {
     } catch (error: any) {
       toast({
         title: 'Ingestion failed',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+    setLoading(false);
+  };
+
+  // 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleSearchSubmit = async () => {
+    setLoading(true);
+    try {
+      console.log("Sending query ", searchQuery)
+      const results = await search(searchQuery);
+      setSearchResults(results);
+      toast({
+        title: 'Search successful',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Search failed',
+        description: error.toString(),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -62,7 +94,13 @@ export default function Home() {
           {isLoading ? 'Ingesting...' : 'Ingest'}
         </Button>
         </div>
-        <Input className="w-full max-w-screen-sm p-2 border rounded" placeholder="Search for images" /> 
+        <Input
+        className="w-full max-w-screen-sm p-2 border rounded"
+        placeholder="Search for images"
+        value={searchQuery}
+        onChange={handleSearchChange}
+        onKeyDown={event => event.key === 'Enter' && handleSearchSubmit()} // Trigger search on Enter key
+        /> 
       </div> 
       <div className="w-full max-w-screen-sm" >
         <Accordion allowToggle className="my-3">
@@ -141,6 +179,20 @@ export default function Home() {
           </AccordionItem>
         </Accordion>
       </div>
-    </div>
+     
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {searchResults.map(result => (
+            <div key={result.pic_id} className="mb-3">
+              <Image
+                src={`${baseurl}${result.url_path}`}
+                alt={`Image for ${result.movie_name}`}
+                width={300}
+                height={300}
+              />
+              <p>{result.movie_name}</p> {/* Displaying movie name as an example */}
+            </div>
+          ))}
+        </div>
+      </div>
   );
 }

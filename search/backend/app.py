@@ -91,12 +91,12 @@ async def search(request: SearchRequest):
     # We assume that the collection is already created with the correct config
     request_dict = request.model_dump()
     print("Search request: ", request_dict)
-    try:
-        text = request_dict.pop("text")
-        results = search_text(text, client, **request_dict)
-        return {"message": "Search successful", "results": results}
-    except:
-        return {"message": "Search failed"}
+    # try:
+    text = request_dict.pop("text")
+    results = search_text(text, client, **request_dict)
+    return {"message": "Search successful", "results": results}
+    # except:
+    #     return {"message": "Search failed"}
 
 
 @app.get("/api/delete")
