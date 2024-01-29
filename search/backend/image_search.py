@@ -53,6 +53,7 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
         collection_name="captions",
         query_vector=get_text_embedding(text)[0].tolist(),
         query_filter=query_filter,
+        limit=k,
         score_threshold=0.6
     )
     
