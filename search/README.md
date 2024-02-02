@@ -48,7 +48,7 @@ To run this app, you need to start the
 1. Qdrant Vector Store
 
 ```bash
-docker run -p 6333:6333 -p 6334:6334 -v $(pwd)/qdrant_storage:/qdrant/storage:z -e QDRANT__SERVICE__GRPC_PORT="6334" qdrant/qdrant```
+docker run -p 6333:6333 -p 6334:6334 -v $(pwd)/qdrant_storage:/qdrant/storage:z -e QDRANT__SERVICE__GRPC_PORT="6334" qdrant/qdrant
 ```
 
 2. Backend Server
