@@ -16,6 +16,7 @@ qdrant-client = "^1.7.1"
 pillow = "^10.2.0"
 torch = "^2.1.2"
 hf-transfer = "^0.1.5"
+python-multipart = "^0.0.6"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.1"
