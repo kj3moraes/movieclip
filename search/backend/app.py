@@ -30,6 +30,7 @@ client = QdrantClient("localhost", port=6333)
 class SearchRequest(BaseModel):
     text: str
     k: Optional[int] = 20 
+    movie: Optional[str] = None
     director: Optional[str] = None
     actor: Optional[str] = None
     genre: Optional[str] = None

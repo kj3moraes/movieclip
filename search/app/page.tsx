@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Button, Code, Input, useToast } from '@chakra-ui/react'
+import { Button, Code, Icon, Input, useToast } from '@chakra-ui/react'
+import { WarningIcon } from "@chakra-ui/icons"
 import {
   Accordion,
   AccordionItem,
@@ -18,7 +19,19 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const toast = useToast();
- 
+
+  // Define the type for the accordion data
+  type AccordionTuple = [string, string, JSX.Element];
+
+  // Create the list of accordion data
+  const accordionData: AccordionTuple[] = [
+    ["Tip #2 : Use d=\"director name\" to filter on director name", "You can filter on movies by a specific director by appending <Code>d=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">spaceship a="George Lucas"</Code>],
+    ["Tip #3 : Use a=\"actor name\" to filter on actor name", "You can filter on movies that have a specific actor by appending <Code>a=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">spaceship a="Mark Hamill"</Code>],
+    ["Tip #4 : Use g=\"genre\" to search on genres", "You can filter on movies of a specific genre by appending <Code>g=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">high school g="Comedy"</Code>],
+    ["Tip #5 : Use y=\"year\" to filter on year", "You can filter on movies in a specific year by appending <Code>y=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">pink y="2023"</Code>],
+    ["Tip #6 : Use m=\"title\" to filter on movie title", "You can filter on movies by title by appending <Code>m=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">a movie scene showing a factory m="Charlie and the Chocolate Factory"</Code>],
+  ]; 
+  
   // Define this function to set a loading state for ingest.
   const handleIngest = async () => {
     setLoading(true);
@@ -114,72 +127,30 @@ export default function Home() {
               </AccordionButton>
             </h2>
             <AccordionPanel pb={4}>
-                The best results come when you describe the scene you want to see. 
+                The best results come when you describe the scene you want to see after the text `a movie scene showing ...` 
             </AccordionPanel>
           </AccordionItem>
 
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box textAlign='left'>
-                  Tip #2 : Use d="director name" to filter on director name
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-              tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-              veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-              commodo consequat.
-            </AccordionPanel>
-          </AccordionItem>
-
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box textAlign='left'>
-                  Tip #3 : Use a="actor name" to filter on actor name 
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              You can filter on movies that have a specific actor by appending <Code>a=</Code> at the end of your query. It would look something like this
-              <Code display="block" whiteSpace="pre" className="my-3">spaceship a="Mark Hamill"</Code>
-            </AccordionPanel>
-          </AccordionItem>
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box textAlign='left'>
-                  Tip #4 : Use g="genre" to search on genres 
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              You can filter on movies of a specific genre by appending <Code>g=</Code> at the end of your query. It would look something like this
-              <Code display="block" whiteSpace="pre" className="my-3">high school g="Comedy"</Code>
-            </AccordionPanel>
-          </AccordionItem>
-          <AccordionItem>
-            <h2>
-              <AccordionButton>
-                <Box textAlign='left'>
-                  Tip #5 : Use y="year" to filter on year 
-                </Box>
-                <AccordionIcon />
-              </AccordionButton>
-            </h2>
-            <AccordionPanel pb={4}>
-              You can filter on movies in a specific year by appending <Code>y=</Code> at the end of your query. It would look something like this
-              <Code display="block" whiteSpace="pre" className="my-3">pink y=2023</Code>
-            </AccordionPanel>
-          </AccordionItem>
+          {/* Mapping the filter query tips */}
+          {accordionData.map(([title, description, codeElement], index) => (
+            <AccordionItem key={index}>
+              <h2>
+                <AccordionButton>
+                  <Box textAlign='left'>{title}</Box>
+                  <AccordionIcon />
+                </AccordionButton>
+              </h2>
+              <AccordionPanel pb={4}>
+                {description}
+                {codeElement}
+              </AccordionPanel>
+            </AccordionItem>
+          ))}
         </Accordion>
       </div>
      
+         {/* Conditionally render the no-results icon or the search results */}
+      {searchResults.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {searchResults.map(result => (
             <div key={result.pic_id} className="mb-3">
@@ -189,10 +160,16 @@ export default function Home() {
                 width={300}
                 height={300}
               />
-              <p>{result.movie_name} - {result.pic_id}</p> {/* Displaying movie name as an example */}
+              <p>{result.movie_name} - {result.pic_id}</p>
             </div>
           ))}
         </div>
+      ) : (
+        <Box textAlign="center" my={10}>
+          <WarningIcon w={20}></WarningIcon>
+          <p>No results found</p>
+        </Box>
+      )}
       </div>
   );
 }

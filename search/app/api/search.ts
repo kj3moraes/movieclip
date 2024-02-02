@@ -43,14 +43,16 @@ export const ingest = async () => {
 export const search = async (query: string): Promise<SearchResult[]> => {
     // Extract parameters using regular expressions
     const genreMatch = query.match(/g="([^"]+)"/);
+    const movieMatch = query.match(/m="([^"]+)"/);
     const directorMatch = query.match(/d="([^"]+)"/);
     const yearMatch = query.match(/y="([^"]+)"/);
     const actorMatch = query.match(/a="([^"]+)"/);
 
     // Construct the search request body
     const requestBody = {
-        text: query.replace(/(g|d|y|a)="[^"]*"/g, '').trim(), 
+        text: query.replace(/(g|d|y|a|m)="[^"]*"/g, '').trim(), 
         k: undefined, 
+        movie: movieMatch ? movieMatch[1] : undefined,
         genre: genreMatch ? genreMatch[1] : undefined,
         director: directorMatch ? directorMatch[1] : undefined,
         year: yearMatch ? yearMatch[1] : undefined,
