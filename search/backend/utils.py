@@ -17,8 +17,7 @@ def generate_id(file_name: str, movie_id: str):
     return str(uuid.uuid5(uuid.NAMESPACE_DNS, combined_string))
 
 
-def get_image_embedding(image_path: Path):
-    image = Image.open(image_path)
+def get_image_embedding(image: Image):
     inputs = processor(images=[image], return_tensors="pt")
     outputs = model.get_image_features(**inputs)
     return outputs.detach().numpy()

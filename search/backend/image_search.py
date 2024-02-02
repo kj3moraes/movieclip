@@ -1,11 +1,8 @@
 from typing import List
-
+from fastapi import File, UploadFile
 from qdrant_client import QdrantClient, models
 from utils import get_image_embedding, get_text_embedding
-
-
-def build_query_filter(*args, **kwargs) -> models.Filter:
-    pass
+from PIL import Image
 
 def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
     print("Searching for: ", text)
@@ -65,11 +62,13 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
         query_vector=get_text_embedding(text)[0].tolist(),
         query_filter=query_filter,
         limit=k,
-        score_threshold=0.6
     )
     
-    # Return the payloads of the extracted results 
-    return results 
+    return [result.model_dump() for result in results] 
 
-def search_images(image: str) -> List[dict]:
-    pass
+def search_images(image: Image, client: QdrantClient) -> List[dict]:
+    results = client.search(
+       collection_name="scenes",
+       query_vector=get_image_embedding(image)[0].tolist()
+    )
+    return [result.model_dump() for result in results] 
