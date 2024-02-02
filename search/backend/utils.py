@@ -1,5 +1,4 @@
 import uuid
-from pathlib import Path
 
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModel, AutoTokenizer
@@ -18,12 +17,30 @@ def generate_id(file_name: str, movie_id: str):
 
 
 def get_image_embedding(image: Image):
+    """Generates the image embeddings for an image and returns
+        it as a numpy array
+
+    Args:
+        image (Image): image to be embedded
+
+    Returns:
+        array of floats.
+    """
     inputs = processor(images=[image], return_tensors="pt")
     outputs = model.get_image_features(**inputs)
     return outputs.detach().numpy()
 
 
 def get_text_embedding(text: str):
+    """Generates the text embeddings for an caption and returns
+        it as a numpy array
+
+    Args:
+        text (str): caption to be embedded
+
+    Returns:
+        array of floats.
+    """
     inputs = tokenizer([text], return_tensors="pt")
     outputs = model.get_text_features(**inputs)
     return outputs.detach().numpy()

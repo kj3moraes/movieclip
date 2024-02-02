@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Button, Code, Icon, Input, useToast } from '@chakra-ui/react'
+import { Button, Code, Input, useToast } from '@chakra-ui/react'
 import { WarningIcon } from "@chakra-ui/icons"
 import {
   Accordion,

@@ -1,20 +1,22 @@
+import io
 from typing import Optional
 
-from fastapi import FastAPI
-from fastapi import File, UploadFile
-from fastapi.responses import JSONResponse
-import io
-from PIL import Image
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from image_ingestion import *
-from image_search import *
+from PIL import Image
 from pydantic import BaseModel
 from qdrant_client import QdrantClient, models
+
+from image_ingestion import *
+from image_search import *
 
 app = FastAPI()
 # Mount a static directory to serve images from
 app.mount("/images", StaticFiles(directory="../image_data"), name="images")
+
+# Specify the origins where CORS is enabled
 origins = [
     "http://localhost:3000",
     "http://localhost:8080",
@@ -33,7 +35,7 @@ client = QdrantClient("localhost", port=6333)
 
 class SearchRequest(BaseModel):
     text: str
-    k: Optional[int] = 20 
+    k: Optional[int] = 20
     movie: Optional[str] = None
     director: Optional[str] = None
     actor: Optional[str] = None
@@ -42,11 +44,16 @@ class SearchRequest(BaseModel):
 
 
 def does_collection_exist() -> bool:
+    """Checks the vector store to see if the collections "scenes" and
+        "captions" are present.
+
+    Returns:
+        bool: returns True if the collections "scenes" and "captions" are
+              present in the vector store.
+    """
     response = client.get_collections()
     if response.collections == []:
         return False
-
-    print(response)
 
     found_scenes, found_captions = False, False
     for collection in response.collections:
@@ -103,20 +110,21 @@ async def search_text(request: SearchRequest):
     except:
         return {"message": "Search failed"}
 
+
 # Search endpoint
 @app.post("/api/search_image")
 async def search_image(file: UploadFile = File()):
     # We assume that the collection is already created with the correct config
     file_data = file.file.read()
     try:
-        image = Image.open(io.BytesIO(file_data))  
+        image = Image.open(io.BytesIO(file_data))
         results = search_images(image, client)
         return {"message": "Search successful", "results": results}
     except:
         return {"message": "Search failed"}
-     
 
 
+# Delete collections endpoint
 @app.get("/api/delete")
 async def delete():
     client.delete_collection("scenes")

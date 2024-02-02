@@ -1,11 +1,22 @@
 from typing import List
-from fastapi import File, UploadFile
-from qdrant_client import QdrantClient, models
-from utils import get_image_embedding, get_text_embedding
+
 from PIL import Image
+from qdrant_client import QdrantClient, models
+
+from utils import get_image_embedding, get_text_embedding
+
 
 def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
-    print("Searching for: ", text)
+    """Semantically searches the vector store's "captions" collection for images
+        whose captions match the parameter `text`
+
+    Args:
+        text (str): caption to be searched for.
+        client (QdrantClient): vector store
+
+    Returns:
+        List[dict]: the closest points
+    """
 
     # Extract the optional filters
     director = kwargs.get("director")
@@ -56,19 +67,30 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
             )
     else:
         query_filter = None
-    print("Query filter ", query_filter)
     results = client.search(
         collection_name="captions",
         query_vector=get_text_embedding(text)[0].tolist(),
         query_filter=query_filter,
         limit=k,
     )
-    
-    return [result.model_dump() for result in results] 
+
+    return [result.model_dump() for result in results]
+
 
 def search_images(image: Image, client: QdrantClient) -> List[dict]:
+    """Semantically searches the vector store's "scenes" collection for images like
+        the parameter `image`
+
+    Args:
+        image (Image): image to be semantically searched
+        client (QdrantClient): vector store
+
+    Returns:
+        List[dict]: the closest points
+    """
+
     results = client.search(
-       collection_name="scenes",
-       query_vector=get_image_embedding(image)[0].tolist()
+        collection_name="scenes", query_vector=get_image_embedding(image)[0].tolist()
     )
-    return [result.model_dump() for result in results] 
+
+    return [result.model_dump() for result in results]
