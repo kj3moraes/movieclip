@@ -11,8 +11,11 @@ import {
   AccordionIcon,
   Box
 } from '@chakra-ui/react'
+import { useDropzone } from 'react-dropzone'
+import Dropzone from 'react-dropzone'
 import { ingest, search, SearchResult, baseurl } from './api/search';
 import Image from 'next/image'; // Import if you want to use Next.js' Image component
+import FileUpload from '@/components/fileupload';
 
 export default function Home() {
   const [isLoading, setLoading] = useState(false);
@@ -115,6 +118,15 @@ export default function Home() {
         onKeyDown={event => event.key === 'Enter' && handleSearchSubmit()} // Trigger search on Enter key
         /> 
       </div> 
+      <Box my={5}>
+        {/* Include the FileUpload component without form handling */}
+        <FileUpload accept="image/*">
+          <Button>
+            Upload Image
+          </Button>
+        </FileUpload>
+      </Box>
+
       <div className="w-full max-w-screen-sm" >
         <Accordion allowToggle className="my-3">
           <AccordionItem>
