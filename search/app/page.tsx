@@ -11,9 +11,7 @@ import {
   AccordionIcon,
   Box
 } from '@chakra-ui/react'
-import { useDropzone } from 'react-dropzone'
-import Dropzone from 'react-dropzone'
-import { ingest, search, SearchResult, baseurl } from './api/search';
+import { ingest, search_text, SearchResult, baseurl } from './api/search';
 import Image from 'next/image'; // Import if you want to use Next.js' Image component
 import FileUpload from '@/components/fileupload';
 
@@ -58,6 +56,16 @@ export default function Home() {
     }
     setLoading(false);
   };
+  // Callback function to update search results
+  const updateSearchResults = (newResults: SearchResult[]) => {
+    setSearchResults(newResults);
+    toast({
+      title: 'Results updated',
+      status: 'success',
+      duration: 5000,
+      isClosable: true,
+    });
+  };
 
   // 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,14 +76,8 @@ export default function Home() {
     setLoading(true);
     try {
       console.log("Sending query ", searchQuery)
-      const results = await search(searchQuery);
-      setSearchResults(results);
-      toast({
-        title: 'Search successful',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
+      const results = await search_text(searchQuery);
+      updateSearchResults(results); 
     } catch (error: any) {
       toast({
         title: 'Search failed',
@@ -120,7 +122,7 @@ export default function Home() {
       </div> 
       <Box my={5}>
         {/* Include the FileUpload component without form handling */}
-        <FileUpload accept="image/*">
+        <FileUpload accept="image/*" onResultsUpdate={updateSearchResults}>
           <Button>
             Upload Image
           </Button>

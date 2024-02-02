@@ -1,31 +1,18 @@
 import React, { useRef } from 'react';
-import { Button, InputGroup } from '@chakra-ui/react';
-// import { Icon } from '@chakra-ui/icons'
-// import { FiFile } from 'react-icons/fi';
+import { InputGroup } from '@chakra-ui/react';
+import { search_image } from '@/app/api/search';
 
-const convertToBase64 = (file: File) => new Promise<string | ArrayBuffer | null>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-});
+const FileUpload = ({ accept, multiple, children, onResultsUpdate }) => {
+  const inputRef = useRef(null);
 
-type FileUploadProps = {
-  accept?: string;
-  multiple?: boolean;
-  children?: React.ReactNode;
-};
-
-const FileUpload: React.FC<FileUploadProps> = ({ accept, multiple, children }) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (event) => {
+    console.log("Called the handleChange function")
     const files = event.target.files;
-    if (files) {
-      for (const file of files) {
-        const base64 = await convertToBase64(file);
-        console.log(base64);
-      }
+    if (files.length > 0) {
+      // Assuming `search_image` function can handle `FileList` directly or adjust accordingly
+      const response = await search_image(files); // Modify according to how your API expects the file
+      onResultsUpdate(response);
+      console.log(response)
     }
   };
 

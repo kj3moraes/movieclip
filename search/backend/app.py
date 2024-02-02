@@ -1,6 +1,10 @@
 from typing import Optional
 
 from fastapi import FastAPI
+from fastapi import File, UploadFile
+from fastapi.responses import JSONResponse
+import io
+from PIL import Image
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from image_ingestion import *
@@ -87,17 +91,30 @@ async def ingest():
 
 
 # Search endpoint
-@app.post("/api/search")
-async def search(request: SearchRequest):
+@app.post("/api/search_text")
+async def search_text(request: SearchRequest):
     # We assume that the collection is already created with the correct config
     request_dict = request.model_dump()
     print("Search request: ", request_dict)
-    # try:
-    text = request_dict.pop("text")
-    results = search_text(text, client, **request_dict)
-    return {"message": "Search successful", "results": results}
-    # except:
-    #     return {"message": "Search failed"}
+    try:
+        text = request_dict.pop("text")
+        results = search_text(text, client, **request_dict)
+        return {"message": "Search successful", "results": results}
+    except:
+        return {"message": "Search failed"}
+
+# Search endpoint
+@app.post("/api/search_image")
+async def search_image(file: UploadFile = File()):
+    # We assume that the collection is already created with the correct config
+    file_data = file.file.read()
+    try:
+        image = Image.open(io.BytesIO(file_data))  
+        results = search_images(image, client)
+        return {"message": "Search successful", "results": results}
+    except:
+        return {"message": "Search failed"}
+     
 
 
 @app.get("/api/delete")
