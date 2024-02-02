@@ -50,7 +50,7 @@ export const search = async (query: string): Promise<SearchResult[]> => {
 
     // Construct the search request body
     const requestBody = {
-        text: query.replace(/(g|d|y|a)="[^"]*"/g, '').trim(), 
+        text: query.replace(/(g|d|y|a|m)="[^"]*"/g, '').trim(), 
         k: undefined, 
         movie: movieMatch ? movieMatch[1] : undefined,
         genre: genreMatch ? genreMatch[1] : undefined,
