@@ -44,3 +44,7 @@ def get_text_embedding(text: str):
     inputs = tokenizer([text], return_tensors="pt")
     outputs = model.get_text_features(**inputs)
     return outputs.detach().numpy()
+
+
+if __name__ == "__main__":
+    print("Getting the models...")
