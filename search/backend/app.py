@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 from pydantic import BaseModel
@@ -124,7 +124,7 @@ async def search_image(file: UploadFile = File()):
     file_data = file.file.read()
     try:
         image = Image.open(io.BytesIO(file_data))
-        results = search_images(image, client)
+        results = search_images_in_db(image, client)
         return JSONResponse(
             content={"message": "Image search successful", "results": results},
             status_code=200,
@@ -134,11 +134,11 @@ async def search_image(file: UploadFile = File()):
 
 
 # Delete collections endpoint
-@app.get("/api/delete")
+@app.get("/api/delete", status_code=204)
 async def delete():
     client.delete_collection("scenes")
     client.delete_collection("captions")
-    return JSONResponse(content={"message": "Delete successful"}, status_code=204)
+    return Response(status_code=204)
 
 
 # Run the server using Uvicorn
