@@ -139,19 +139,6 @@ export default function Home() {
         </div>
       </div> 
 
-      {/* Dividing line */}
-      <hr className="border-t border-gray-300 w-full max-w-screen-sm my-4" />
-
-      {/* Upload section with 'Upload Image' button aligned to the right */}
-      <Box className="flex justify-between items-center max-w-screen-sm my-5">
-        <p className="text-left w-max">You can even search by images:</p>
-        <FileUpload accept="image/*" onResultsUpdate={updateSearchResults}>
-          <Button>
-            Upload Image
-          </Button>
-        </FileUpload>
-      </Box>
-
       <div className="w-full max-w-screen-sm" >
         <Accordion allowToggle className="my-3">
           <AccordionItem>
@@ -185,8 +172,19 @@ export default function Home() {
           ))}
         </Accordion>
       </div>
+
+      {/* Upload section with 'Upload Image' button aligned to the right */}
+      <Box className="flex justify-between items-center max-w-screen-sm my-5">
+        <p className="text-left w-max">You can even search by images:</p>
+        <FileUpload accept="image/*" onResultsUpdate={updateSearchResults}>
+          <Button>
+            Upload Image
+          </Button>
+        </FileUpload>
+      </Box>
+
      
-         {/* Conditionally render the no-results icon or the search results */}
+      {/* Conditionally render the no-results icon or the search results */}
       {searchResults.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {searchResults.map(result => (
