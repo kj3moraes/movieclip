@@ -5,12 +5,11 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+from image_ingestion import *
+from image_search import *
 from PIL import Image
 from pydantic import BaseModel
 from qdrant_client import QdrantClient, models
-
-from image_ingestion import *
-from image_search import *
 
 app = FastAPI()
 # Mount a static directory to serve images from
@@ -86,16 +85,16 @@ async def ingest():
             content={"message": "Ingestion unnecessary."}, status_code=200
         )
 
-    try:
-        with open("../image_data/results.json") as f:
-            results = json.load(f)
-        # Iterate through each of the directories and upsert them
-        # into the Qdrant db
-        for dir_path in Path("../image_data").iterdir():
-            if dir_path.is_dir():
-                ingest_dir(dir_path, client, results)
-    except:
-        return JSONResponse(content={"message": "Ingest failed"}, status_code=400)
+    # try:
+    with open("../image_data/results.json") as f:
+        results = json.load(f)
+    # Iterate through each of the directories and upsert them
+    # into the Qdrant db
+    for dir_path in Path("../image_data").iterdir():
+        if dir_path.is_dir():
+            ingest_dir(dir_path, client, results)
+    # except:
+    return JSONResponse(content={"message": "Ingest failed"}, status_code=400)
     return JSONResponse(content={"message": "Ingest successful"}, status_code=201)
 
 
