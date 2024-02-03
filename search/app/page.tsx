@@ -9,6 +9,8 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  Alert,
+  AlertIcon,
   Box
 } from '@chakra-ui/react'
 import { ingest, search_text, SearchResult, baseurl } from './api/search';
@@ -26,11 +28,11 @@ export default function Home() {
 
   // Create the list of accordion data
   const accordionData: AccordionTuple[] = [
-    ["Tip #2 : Use d=\"director name\" to filter on director name", "You can filter on movies by a specific director by appending <Code>d=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">spaceship a="George Lucas"</Code>],
-    ["Tip #3 : Use a=\"actor name\" to filter on actor name", "You can filter on movies that have a specific actor by appending <Code>a=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">spaceship a="Mark Hamill"</Code>],
-    ["Tip #4 : Use g=\"genre\" to search on genres", "You can filter on movies of a specific genre by appending <Code>g=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">high school g="Comedy"</Code>],
-    ["Tip #5 : Use y=\"year\" to filter on year", "You can filter on movies in a specific year by appending <Code>y=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">pink y="2023"</Code>],
-    ["Tip #6 : Use m=\"title\" to filter on movie title", "You can filter on movies by title by appending <Code>m=</Code> at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">a movie scene showing a factory m="Charlie and the Chocolate Factory"</Code>],
+    ["Tip #2 : Use d=\"director name\" to filter on director name", "You can filter on movies by a specific director by appending d= at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">spaceship a="George Lucas"</Code>],
+    ["Tip #3 : Use a=\"actor name\" to filter on actor name", "You can filter on movies that have a specific actor by appending a at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">spaceship a="Mark Hamill"</Code>],
+    ["Tip #4 : Use g=\"genre\" to search on genres", "You can filter on movies of a specific genre by appending g at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">high school g="Comedy"</Code>],
+    ["Tip #5 : Use y=\"year\" to filter on year", "You can filter on movies in a specific year by appending y at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">pink y="2023"</Code>],
+    ["Tip #6 : Use m=\"title\" to filter on movie title", "You can filter on movies by title by appending m at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">a movie scene showing a factory m="Charlie and the Chocolate Factory"</Code>],
   ]; 
   
   // Define this function to set a loading state for ingest.
@@ -102,7 +104,9 @@ export default function Home() {
           />
           <h1 className="text-4xl ml-2">moviesearch</h1> {/* ml-2 for margin-left, adjust as needed */}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-4 m-4 w-full max-w-screen-sm">
+        <Alert status='warning'>
+        <AlertIcon/>
+        <div className="grid grid-cols-1 md:grid-cols-[auto,1fr] gap-4 w-full max-w-screen-sm">
           <p className="md:col-span-1"> You must ingest before you search to ensure that all the images in your custom directory are present in the vector store</p>
           <Button
             className={`md:col-span-1 justify-self-end ${isLoading ? 'bg-gray-400' : 'bg-blue-500'}`} // Replace with your actual class names
@@ -112,16 +116,35 @@ export default function Home() {
           {isLoading ? 'Ingesting...' : 'Ingest'}
         </Button>
         </div>
-        <Input
-        className="w-full max-w-screen-sm p-2 border rounded"
-        placeholder="Search for images"
-        value={searchQuery}
-        onChange={handleSearchChange}
-        onKeyDown={event => event.key === 'Enter' && handleSearchSubmit()} // Trigger search on Enter key
-        /> 
+        </Alert>
+
+        {/* Dividing line */}
+        <hr className="border-t border-gray-300 w-full max-w-screen-sm my-4" />
+
+        {/* Search bar */}
+        <div className="flex w-full max-w-screen-sm">
+          <Input
+            className="p-4 border rounded-tl rounded-bl flex-grow"
+            placeholder="Search for images"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onKeyDown={event => event.key === 'Enter' && handleSearchSubmit()}
+          />
+          <Button
+            className={`justify-self-end ${isLoading ? 'bg-gray-400' : 'bg-blue-500'} rounded-tr rounded-br`}
+            onClick={handleSearchSubmit}
+            disabled={isLoading}
+          > Search
+          </Button>
+        </div>
       </div> 
-      <Box my={5}>
-        {/* Include the FileUpload component without form handling */}
+
+      {/* Dividing line */}
+      <hr className="border-t border-gray-300 w-full max-w-screen-sm my-4" />
+
+      {/* Upload section with 'Upload Image' button aligned to the right */}
+      <Box className="flex justify-between items-center max-w-screen-sm my-5">
+        <p className="text-left w-max">You can even search by images:</p>
         <FileUpload accept="image/*" onResultsUpdate={updateSearchResults}>
           <Button>
             Upload Image

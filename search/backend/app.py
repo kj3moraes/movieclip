@@ -82,7 +82,9 @@ async def ingest():
             ),
         )
     else:
-        return {"message": "Ingestion unnecessary."}
+        return JSONResponse(
+            content={"message": "Ingestion unnecessary."}, status_code=200
+        )
 
     try:
         with open("../image_data/results.json") as f:
@@ -93,8 +95,8 @@ async def ingest():
             if dir_path.is_dir():
                 ingest_dir(dir_path, client, results)
     except:
-        return {"message": "Ingest failed"}
-    return {"message": "Ingest successful"}
+        return JSONResponse(content={"message": "Ingest failed"}, status_code=400)
+    return JSONResponse(content={"message": "Ingest successful"}, status_code=201)
 
 
 # Search endpoint
@@ -102,13 +104,17 @@ async def ingest():
 async def search_text(request: SearchRequest):
     # We assume that the collection is already created with the correct config
     request_dict = request.model_dump()
-    print("Search request: ", request_dict)
     try:
         text = request_dict.pop("text")
-        results = search_text(text, client, **request_dict)
-        return {"message": "Search successful", "results": results}
+        results = search_text_in_db(text, client, **request_dict)
+        return JSONResponse(
+            content={"message": "Caption search successful", "results": results},
+            status_code=200,
+        )
     except:
-        return {"message": "Search failed"}
+        return JSONResponse(
+            content={"message": "Caption search failed"}, status_code=400
+        )
 
 
 # Search endpoint
@@ -119,9 +125,12 @@ async def search_image(file: UploadFile = File()):
     try:
         image = Image.open(io.BytesIO(file_data))
         results = search_images(image, client)
-        return {"message": "Search successful", "results": results}
+        return JSONResponse(
+            content={"message": "Image search successful", "results": results},
+            status_code=200,
+        )
     except:
-        return {"message": "Search failed"}
+        return JSONResponse(content={"message": "Image search failed"}, status_code=401)
 
 
 # Delete collections endpoint
@@ -129,7 +138,7 @@ async def search_image(file: UploadFile = File()):
 async def delete():
     client.delete_collection("scenes")
     client.delete_collection("captions")
-    return {"message": "Delete successful"}
+    return JSONResponse(content={"message": "Delete successful"}, status_code=204)
 
 
 # Run the server using Uvicorn

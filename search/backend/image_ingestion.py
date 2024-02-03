@@ -8,6 +8,15 @@ from utils import generate_id, get_image_embedding, get_text_embedding
 
 
 def ingest_dir(dir_path: Path, client: QdrantClient, movie_info: dict):
+    """ Given the movie directory path, ingests all the images and their respective
+        captions into the "scenes" and "captions" collection of the provided.
+
+    Args:
+        dir_path (c): path to the directory where the movie images are located. 
+        client (QdrantClient): connection to the vector store 
+        movie_info (dict): Metadata on the movie 
+    """
+
     print("Processing ", dir_path)
     with open(dir_path / "captions.json") as f:
         captions = json.load(f)

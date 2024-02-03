@@ -6,7 +6,7 @@ from qdrant_client import QdrantClient, models
 from utils import get_image_embedding, get_text_embedding
 
 
-def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
+def search_text_in_db(text: str, client: QdrantClient, **kwargs) -> List[dict]:
     """Semantically searches the vector store's "captions" collection for images
         whose captions match the parameter `text`
 
@@ -77,7 +77,7 @@ def search_text(text: str, client: QdrantClient, **kwargs) -> List[dict]:
     return [result.model_dump() for result in results]
 
 
-def search_images(image: Image, client: QdrantClient) -> List[dict]:
+def search_images_in_db(image: Image, client: QdrantClient) -> List[dict]:
     """Semantically searches the vector store's "scenes" collection for images like
         the parameter `image`
 

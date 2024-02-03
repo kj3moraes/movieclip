@@ -66,7 +66,7 @@ npm run dev
 
 The application will start runnign at `localhost:3000`
 
-## Custom Data 
+## Custom Data
 
 The search engine **will only embed images in the `image_data`** directory. The directory must have the following structure 
 
@@ -86,7 +86,7 @@ image_data/
 n directories, m files
 ```
 
-You must ensure that:
+**You must ensure that:**
 
 1. the `results.json` has all the information for the movies in the directory
 2. each of the movie directories have a `captions.json` with the captions for each of the images in that directory
