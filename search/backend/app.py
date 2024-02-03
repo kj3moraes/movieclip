@@ -1,16 +1,22 @@
+import io
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from image_ingestion import *
-from image_search import *
+from PIL import Image
 from pydantic import BaseModel
 from qdrant_client import QdrantClient, models
+
+from image_ingestion import *
+from image_search import *
 
 app = FastAPI()
 # Mount a static directory to serve images from
 app.mount("/images", StaticFiles(directory="../image_data"), name="images")
+
+# Specify the origins where CORS is enabled
 origins = [
     "http://localhost:3000",
     "http://localhost:8080",
@@ -29,7 +35,7 @@ client = QdrantClient("localhost", port=6333)
 
 class SearchRequest(BaseModel):
     text: str
-    k: Optional[int] = 20 
+    k: Optional[int] = 20
     movie: Optional[str] = None
     director: Optional[str] = None
     actor: Optional[str] = None
@@ -38,11 +44,16 @@ class SearchRequest(BaseModel):
 
 
 def does_collection_exist() -> bool:
+    """Checks the vector store to see if the collections "scenes" and
+        "captions" are present.
+
+    Returns:
+        bool: returns True if the collections "scenes" and "captions" are
+              present in the vector store.
+    """
     response = client.get_collections()
     if response.collections == []:
         return False
-
-    print(response)
 
     found_scenes, found_captions = False, False
     for collection in response.collections:
@@ -71,7 +82,9 @@ async def ingest():
             ),
         )
     else:
-        return {"message": "Ingestion unnecessary."}
+        return JSONResponse(
+            content={"message": "Ingestion unnecessary."}, status_code=200
+        )
 
     try:
         with open("../image_data/results.json") as f:
@@ -82,29 +95,50 @@ async def ingest():
             if dir_path.is_dir():
                 ingest_dir(dir_path, client, results)
     except:
-        return {"message": "Ingest failed"}
-    return {"message": "Ingest successful"}
+        return JSONResponse(content={"message": "Ingest failed"}, status_code=400)
+    return JSONResponse(content={"message": "Ingest successful"}, status_code=201)
 
 
 # Search endpoint
-@app.post("/api/search")
-async def search(request: SearchRequest):
+@app.post("/api/search_text")
+async def search_text(request: SearchRequest):
     # We assume that the collection is already created with the correct config
     request_dict = request.model_dump()
-    print("Search request: ", request_dict)
-    # try:
-    text = request_dict.pop("text")
-    results = search_text(text, client, **request_dict)
-    return {"message": "Search successful", "results": results}
-    # except:
-    #     return {"message": "Search failed"}
+    try:
+        text = request_dict.pop("text")
+        results = search_text_in_db(text, client, **request_dict)
+        return JSONResponse(
+            content={"message": "Caption search successful", "results": results},
+            status_code=200,
+        )
+    except:
+        return JSONResponse(
+            content={"message": "Caption search failed"}, status_code=400
+        )
 
 
+# Search endpoint
+@app.post("/api/search_image")
+async def search_image(file: UploadFile = File()):
+    # We assume that the collection is already created with the correct config
+    file_data = file.file.read()
+    try:
+        image = Image.open(io.BytesIO(file_data))
+        results = search_images(image, client)
+        return JSONResponse(
+            content={"message": "Image search successful", "results": results},
+            status_code=200,
+        )
+    except:
+        return JSONResponse(content={"message": "Image search failed"}, status_code=401)
+
+
+# Delete collections endpoint
 @app.get("/api/delete")
 async def delete():
     client.delete_collection("scenes")
     client.delete_collection("captions")
-    return {"message": "Delete successful"}
+    return JSONResponse(content={"message": "Delete successful"}, status_code=204)
 
 
 # Run the server using Uvicorn
