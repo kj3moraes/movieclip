@@ -10,6 +10,6 @@ COPY . .
 EXPOSE 8000
 
 # Install the models before the app
-CMD ["python", "utils.py"]
+RUN ["python", "utils.py"]
 
 CMD ["uvicorn", "app:app"]

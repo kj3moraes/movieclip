@@ -28,11 +28,11 @@ export default function Home() {
 
   // Create the list of accordion data
   const accordionData: AccordionTuple[] = [
-    ["Tip #2 : Use d=\"director name\" to filter on director name", "You can filter on movies by a specific director by appending d= at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">spaceship a="George Lucas"</Code>],
-    ["Tip #3 : Use a=\"actor name\" to filter on actor name", "You can filter on movies that have a specific actor by appending a at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">spaceship a="Mark Hamill"</Code>],
-    ["Tip #4 : Use g=\"genre\" to search on genres", "You can filter on movies of a specific genre by appending g at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">high school g="Comedy"</Code>],
-    ["Tip #5 : Use y=\"year\" to filter on year", "You can filter on movies in a specific year by appending y at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">pink y="2023"</Code>],
-    ["Tip #6 : Use m=\"title\" to filter on movie title", "You can filter on movies by title by appending m at the end of your query. It would look something like this:", <Code display="block" whiteSpace="pre" className="my-3">a movie scene showing a factory m="Charlie and the Chocolate Factory"</Code>],
+    ["Tip #2 : Use d=\"director name\" to filter on director name", "You can filter on movies by a specific director by appending d= at the end of your query. It would look something like this:", <Code key={1} display="block" whiteSpace="pre" className="my-3">spaceship a=&quot;George Lucas&quot;</Code>],
+    ["Tip #3 : Use a=\"actor name\" to filter on actor name", "You can filter on movies that have a specific actor by appending a at the end of your query. It would look something like this:", <Code key={2} display="block" whiteSpace="pre" className="my-3">spaceship a=&quot;Mark Hamill&quot;</Code>],
+    ["Tip #4 : Use g=\"genre\" to search on genres", "You can filter on movies of a specific genre by appending g at the end of your query. It would look something like this:", <Code key={3} display="block" whiteSpace="pre" className="my-3">high school g=&quot;Comedy&quot;</Code>],
+    ["Tip #5 : Use y=\"year\" to filter on year", "You can filter on movies in a specific year by appending y at the end of your query. It would look something like this:", <Code key={4} display="block" whiteSpace="pre" className="my-3">pink y=&quot;2023&quot;</Code>],
+    ["Tip #6 : Use m=\"title\" to filter on movie title", "You can filter on movies by title by appending m at the end of your query. It would look something like this:", <Code key={5} display="block" whiteSpace="pre" className="my-3">a movie scene showing a factory m=&quot;Charlie and the Chocolate Factory&quot;</Code>],
   ]; 
   
   // Define this function to set a loading state for ingest.
