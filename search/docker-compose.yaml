@@ -1,0 +1,32 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage:z
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/localhost"]
+      interval: 2s
+      timeout: 2s
+      retries: 3
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./image_data:/image_data
+    depends_on:
+      qdrant:
+        condition: service_started
+    ports:
+      - "8000:8000"
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - qdrant
+      - backend
+    ports:
+      - "3000:3000"
